@@ -72,13 +72,9 @@ def http_request(
 
 
 def request_access_token(
-    app_login: str, app_id: int, app_private_key: Path, github_host: str = "github.com"
+    app_login: str, app_id: int, app_private_key: Path
 ) -> str:
-    uri = (
-        f"https://api.{github_host}"
-        if github_host == "github.com"
-        else f"https://{github_host}/api/v3"
-    )
+    uri = "https://github.com/api/v3"
     app_installations_uri = f"{uri}/app/installations"
 
     jwt_payload = json.dumps(build_jwt_payload(app_id)).encode("utf-8")
@@ -117,13 +113,10 @@ def main() -> None:
     parser.add_argument(
         "--app-private-key-file", type=str, help="Github App Private Key", required=True
     )
-    parser.add_argument(
-        "--github-host", type=str, help="Github Host", default="github.com"
-    )
     args = parser.parse_args()
     app_private_key = Path(args.app_private_key_file)
     token = request_access_token(
-        args.login, args.app_id, app_private_key, args.github_host
+        args.login, args.app_id, app_private_key
     )
     print(token)
 
