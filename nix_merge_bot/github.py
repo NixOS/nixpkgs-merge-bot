@@ -33,6 +33,7 @@ def build_jwt_payload(app_id: int) -> dict[str, Any]:
     jwt_payload = {"iat": iat, "exp": iat + jwt_exp_delta, "iss": str(app_id)}
     return jwt_payload
 
+
 class HttpResponse:
     def __init__(self, raw: http.client.HTTPResponse) -> None:
         self.raw = raw
@@ -68,6 +69,7 @@ def http_request(
             f"Request for {method} {url} failed with {e.code} {e.reason}: {resp_body}"
         ) from e
     return HttpResponse(resp)
+
 
 def request_access_token(
     app_login: str, app_id: int, app_private_key: Path, github_host: str = "github.com"
