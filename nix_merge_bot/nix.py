@@ -2,7 +2,7 @@ from pathlib import Path
 import subprocess
 import json
 
-from .github import http_request
+from .github import GithubClient
 
 class MergeResponse:
     def __init__(self, permitted: bool, meta: dict):
@@ -28,7 +28,8 @@ def get_package_maintainers(path: str) -> list[str]:
 
 
 def merge_pr(pr_number: int, github_id: int):
-    files_response = http_request(f"https://api.github.com/repos/nixos/nixpkgs/pulls/{pr_number}/files")
+    c = GithubClient(None)
+    files_response = c.pull_request_files("nixos", "nixpkgs", pr_number)
     meta = {}
     permitted = True
     for file in files_response.json():
