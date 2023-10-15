@@ -6,8 +6,8 @@ import http.client
 import json
 import subprocess
 import time
-import urllib.request
 import urllib.parse
+import urllib.request
 from pathlib import Path
 from typing import Any
 
@@ -62,7 +62,7 @@ class GithubClient:
         headers = {"Content-Type": "application/json"}
         if self.api_token:
             headers["Authorization"] = f"Bearer {self.api_token}"
-        headers["User-Agent"] = "nix-merge-bot"
+        headers["User-Agent"] = "nixpkgs-merge-bot"
 
         body = None
         if data:
