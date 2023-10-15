@@ -21,6 +21,7 @@
             packages = [
               pkgs.bashInteractive
               pkgs.python3
+              pkgs.python3.pkgs.pytest
             ];
           };
           checks =

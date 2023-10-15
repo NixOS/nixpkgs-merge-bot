@@ -1,6 +1,6 @@
 import json
+import logging
 import socket
-from collections.abc import Callable
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler
 from typing import Any
@@ -28,13 +28,10 @@ class GithubWebHook(BaseHTTPRequestHandler):
         self.wfile = conn.makefile("wb")
         self.client_address = addr
         self.secret = WebhookSecret(secret)
-        self.event_handlers: dict[str, Callable[[Any], HttpResponse]] = {}
         self.handle()
 
-    def register_event_handler(
-        self, event_type: str, handler: Callable[[Any], HttpResponse]
-    ) -> None:
-        self.event_handlers[event_type] = handler
+    def issue_comment(self, body: dict[str, Any]) -> HttpResponse:
+        return HttpResponse(200, {}, b"ok")
 
     # for testing
     def do_GET(self) -> None:  # noqa: N802
@@ -48,12 +45,15 @@ class GithubWebHook(BaseHTTPRequestHandler):
         event_type = self.headers.get("X-Github-Event")
         if not event_type:
             return self.send_error(400, explain="X-Github-Event header missing")
+        payload = json.loads(body)
 
-        handler = self.event_handlers.get(event_type)
-        if not handler:
-            return self.send_error(
-                404, explain=f"event_type '{event_type}' not registered"
-            )
+        match event_type:
+            case "issue_comment":
+                handler = self.issue_comment
+            case _:
+                return self.send_error(
+                    404, explain=f"event_type '{event_type}' not registered"
+                )
 
         try:
             payload = json.loads(body)
@@ -65,6 +65,7 @@ class GithubWebHook(BaseHTTPRequestHandler):
         self.send_response(resp.code)
         for k, v in resp.headers.items():
             self.send_header(k, v)
+        self.send_header("Content-length", str(len(resp.body)))
         self.end_headers()
         self.wfile.write(resp.body)
 
@@ -89,4 +90,5 @@ class GithubWebHook(BaseHTTPRequestHandler):
         except HttpError as e:
             self.send_error(e.code, e.message)
         except Exception as e:
+            logging.exception("internal error")
             return self.send_error(500, explain=f"internal error: {e}")

@@ -1,6 +1,7 @@
 import hashlib
 import hmac
 from email.message import Message
+from .errors import HttpError
 
 
 class WebhookSecret:
@@ -9,10 +10,12 @@ class WebhookSecret:
 
     def validate_signature(self, body: bytes, headers: Message) -> bool:
         # Get the signature from the payload
-        signature_header = headers["X-Hub-Signature"]
+        signature_header = headers.get("X-Hub-Signature")
+        if not signature_header:
+            raise HttpError(401, "X-Hub-Signature header missing")
         sha_name, github_signature = signature_header.split("=")
         if sha_name != "sha1":
-            raise Exception("X-Hub-Signature sha_name is not sha1")
+            raise HttpError(401, "X-Hub-Signature sha_name is not sha1")
 
         # Create our own signature
         local_signature = hmac.new(
