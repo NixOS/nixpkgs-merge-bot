@@ -8,6 +8,9 @@
       programs.nixpkgs-fmt.enable = true;
       programs.shellcheck.enable = true;
       programs.deno.enable = true;
+      settings.formatter.deno = {
+        excludes = [ "tests/data/*.json" ];
+      };
       settings.formatter.shellcheck.options = [ "-s" "bash" ];
 
       programs.mypy.enable = true;
