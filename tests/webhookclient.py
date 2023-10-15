@@ -3,11 +3,12 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from http.client import HTTPConnection
+
 import pytest
 
 
 @contextmanager
-def socket_pair():
+def socket_pair() -> Iterator[tuple[socket.socket, socket.socket]]:
     fds = socket.socketpair(socket.AF_UNIX, socket.SOCK_STREAM)
     try:
         yield fds

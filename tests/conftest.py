@@ -1,6 +1,5 @@
 import logging
 
-
-pytest_plugins = [ "webhookclient" ]
+pytest_plugins = ["webhookclient"]
 
 logging.basicConfig(level=logging.DEBUG)

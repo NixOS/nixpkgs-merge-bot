@@ -1,20 +1,14 @@
 import json
 import logging
 import socket
-from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler
 from typing import Any
 
-from . import httpheader
+from . import http_header
 from .errors import HttpError
+from .http_response import HttpResponse
+from .issue_comment import issue_comment
 from .secret import WebhookSecret
-
-
-@dataclass
-class HttpResponse:
-    code: int
-    headers: dict[str, str]
-    body: bytes
 
 
 class GithubWebHook(BaseHTTPRequestHandler):
@@ -31,7 +25,7 @@ class GithubWebHook(BaseHTTPRequestHandler):
         self.handle()
 
     def issue_comment(self, body: dict[str, Any]) -> HttpResponse:
-        return HttpResponse(200, {}, b"ok")
+        return issue_comment(body)
 
     # for testing
     def do_GET(self) -> None:  # noqa: N802
@@ -71,7 +65,7 @@ class GithubWebHook(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:  # noqa: N802
         content_type = self.headers.get("content-type", "")
-        content_type, _ = httpheader.parse_header(content_type)
+        content_type, _ = http_header.parse_header(content_type)
 
         # refuse to receive non-json content
         if content_type != "application/json":
