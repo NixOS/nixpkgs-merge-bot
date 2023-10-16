@@ -17,13 +17,7 @@
         imports = [ ./nix/treefmt/flake-module.nix ];
         systems = [ "x86_64-linux" "aarch64-linux" ];
         perSystem = { self', pkgs, system, ... }: {
-          packages.default = pkgs.mkShell {
-            packages = [
-              pkgs.bashInteractive
-              pkgs.python3
-              pkgs.python3.pkgs.pytest
-            ];
-          };
+          packages.default = pkgs.python3.pkgs.callPackage ./default.nix { };
           checks =
             let
               nixosMachines = lib.mapAttrs' (name: config: lib.nameValuePair "nixos-${name}" config.config.system.build.toplevel) ((lib.filterAttrs (_: config: config.pkgs.system == system)) self.nixosConfigurations);
