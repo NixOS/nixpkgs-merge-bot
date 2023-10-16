@@ -2,6 +2,7 @@ import json
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from .github import GithubClient
 
@@ -19,24 +20,29 @@ class Maintainer:
     name: str
 
 
-def get_package_maintainers(path: Path) -> list[Maintainer]:
-    package_name = path.parts[3]
-    # TODO maybe we want to check the merge target remote here?
-    flake_url = f"github:nixos/nixpkgs/master#{package_name}.meta.maintainers"
-
+def nix_eval(url: str) -> bytes:
     proc = subprocess.run(
         [
             "nix",
             "eval",
+            "--experimental-features",
+            "nix-command flakes",
             "--refresh",
             "--json",
-            flake_url,
+            url,
         ],
         check=True,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
     )
-    maintainers = json.loads(proc.stdout.decode("utf-8"))
+    return proc.stdout
+
+
+def get_package_maintainers(path: Path) -> list[Maintainer]:
+    package_name = path.parts[3]
+    # TODO maybe we want to check the merge target remote here?
+    proc = nix_eval(f"github:nixos/nixpkgs/master#{package_name}.meta.maintainers")
+    maintainers = json.loads(proc.decode("utf-8"))
     return [
         Maintainer(maintainer["githubId"], maintainer["github"])
         for maintainer in maintainers
