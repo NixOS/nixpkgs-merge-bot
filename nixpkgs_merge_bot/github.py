@@ -103,6 +103,9 @@ class GithubClient:
     def app_installations(self) -> Any:
         return self.get("/app/installations")
 
+    def pull_request(self, owner: str, repo: str, pr_number: int) -> Any:
+        return self.get(f"/repos/{owner}/{repo}/pulls/{pr_number}")
+
     def pull_request_files(self, owner: str, repo: str, pr_number: int) -> Any:
         return self.get(f"/repos/{owner}/{repo}/pulls/{pr_number}/files")
 
@@ -117,7 +120,7 @@ class GithubClient:
         self, owner: str, repo: str, issue_number: int, comment_id: int, reaction: str
     ) -> Any:
         return self.post(
-            f"/repos/{owner}/{repo}/issues/{issue_number}/comments/{comment_id}/reactions",
+            f"/repos/{owner}/{repo}/issues/comments/{comment_id}/reactions",
             {"content": reaction},
         )
 

@@ -22,6 +22,21 @@ class Issue:
     repo_owner: str
     repo_name: str
     issue_number: int
+    is_bot: bool
+
+    @staticmethod
+    def from_json(body: dict[str, Any]) -> "Issue":
+        return Issue(
+            action=body["action"],
+            user_id=body["comment"]["user"]["id"],
+            user_login=body["comment"]["user"]["login"],
+            text=body["comment"]["body"],
+            comment_id=body["comment"]["id"],
+            repo_owner=body["repository"]["owner"]["login"],
+            repo_name=body["repository"]["name"],
+            issue_number=body["issue"]["number"],
+            is_bot=body["comment"]["user"]["type"] == "Bot",
+        )
 
 
 def issue_response(action: str) -> HttpResponse:
@@ -29,27 +44,26 @@ def issue_response(action: str) -> HttpResponse:
 
 
 def issue_comment(body: dict[str, Any], settings: Settings) -> HttpResponse:
-    issue = Issue(
-        action=body["action"],
-        user_id=body["comment"]["user"]["id"],
-        user_login=body["comment"]["user"]["login"],
-        text=body["comment"]["body"],
-        comment_id=body["comment"]["id"],
-        repo_owner=body["repository"]["owner"]["login"],
-        repo_name=body["repository"]["name"],
-        issue_number=body["issue"]["number"],
-    )
+    issue = Issue.from_json(body)
     logger.debug(f"issue_comment: {issue}")
-    if body["issue"].get("pull_request"):
-        return issue_response("ignore")
+
+    # ignore our own comments and comments from other bots (security)
+    if issue.is_bot:
+        return issue_response("ignore-bot")
+    if not body["issue"].get("pull_request"):
+        return issue_response("ignore-not-pr")
+
     if issue.action not in ("created", "edited"):
-        return issue_response("ignore")
+        return issue_response("ignore-action")
+
     stripped = re.sub("(<!--.*?-->)", "", issue.text, flags=re.DOTALL)
     bot_name = re.escape(settings.bot_name)
     if not re.match(rf"@{bot_name}\s+merge", stripped):
         return issue_response("no-command")
 
-    check = merge_check(body["issue"]["number"], issue.user_id)
+    check = merge_check(
+        issue.repo_owner, issue.repo_name, issue.issue_number, issue.user_id
+    )
     client = get_github_client(settings)
     client.create_issue_reaction(
         issue.repo_owner,
