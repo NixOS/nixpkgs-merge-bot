@@ -43,6 +43,10 @@ class HttpResponse:
     def json(self) -> Any:
         return json.load(self.raw)
 
+    def save(self, path: str) -> None:
+        with open(path, "wb") as f:
+            f.write(self.raw.read())
+
     def headers(self) -> http.client.HTTPMessage:
         return self.raw.headers
 
@@ -50,6 +54,7 @@ class HttpResponse:
 class GithubClientError(Exception):
     code: int
     reason: str
+    url: str
     body: str
 
 
@@ -64,7 +69,7 @@ class GithubClient:
         method: str,
         data: dict[str, Any] | None = None,
         headers: dict[str, str] = {},
-    ) -> Any:
+    ) -> HttpResponse:
         url = urllib.parse.urljoin("https://api.github.com/", path)
         headers = headers.copy()
         headers = {
@@ -88,37 +93,37 @@ class GithubClient:
                 resp_body = e.fp.read().decode("utf-8", "replace")
             except Exception:
                 pass
-            raise GithubClientError(e.code, e.reason, resp_body) from e
+            raise GithubClientError(e.code, e.reason, url, resp_body) from e
         return HttpResponse(resp)
 
-    def get(self, path: str) -> Any:
+    def get(self, path: str) -> HttpResponse:
         return self._request(path, "GET")
 
-    def post(self, path: str, data: dict[str, str]) -> Any:
+    def post(self, path: str, data: dict[str, str]) -> HttpResponse:
         return self._request(path, "POST", data)
 
-    def put(self, path: str) -> Any:
+    def put(self, path: str, data: dict[str, str]) -> HttpResponse:
         return self._request(path, "PUT")
 
-    def app_installations(self) -> Any:
+    def app_installations(self) -> HttpResponse:
         return self.get("/app/installations")
 
-    def pull_request(self, owner: str, repo: str, pr_number: int) -> Any:
+    def pull_request(self, owner: str, repo: str, pr_number: int) -> HttpResponse:
         return self.get(f"/repos/{owner}/{repo}/pulls/{pr_number}")
 
-    def pull_request_files(self, owner: str, repo: str, pr_number: int) -> Any:
+    def pull_request_files(self, owner: str, repo: str, pr_number: int) -> HttpResponse:
         return self.get(f"/repos/{owner}/{repo}/pulls/{pr_number}/files")
 
     def create_issue_comment(
         self, owner: str, repo: str, issue_number: int, body: str
-    ) -> Any:
+    ) -> HttpResponse:
         return self.post(
             f"/repos/{owner}/{repo}/issues/{issue_number}/comments", {"body": body}
         )
 
     def create_issue_reaction(
         self, owner: str, repo: str, issue_number: int, comment_id: int, reaction: str
-    ) -> Any:
+    ) -> HttpResponse:
         return self.post(
             f"/repos/{owner}/{repo}/issues/comments/{comment_id}/reactions",
             {"content": reaction},
@@ -126,8 +131,11 @@ class GithubClient:
 
     def merge_pull_request(
         self, owner: str, repo: str, pr_number: int, sha: str
-    ) -> Any:
-        return self.put(f"/repos/{owner}/{repo}/pulls/{pr_number}/merge")
+    ) -> HttpResponse:
+        return self.put(f"/repos/{owner}/{repo}/pulls/{pr_number}/merge", data={"sha": sha})
+
+    def create_installation_access_token(self, installation_id: int) -> HttpResponse:
+        return self.post(f"/app/installations/{installation_id}/access_tokens", data={})
 
 
 def request_access_token(app_login: str, app_id: int, app_private_key: str) -> str:
@@ -140,16 +148,16 @@ def request_access_token(app_login: str, app_id: int, app_private_key: str) -> s
     client = GithubClient(generated_jwt)
     response = client.app_installations()
 
-    access_token_url = None
+    installation_id = None
     for item in response.json():
         if item["account"]["login"] == app_login and item["app_id"] == app_id:
-            access_token_url = item["access_tokens_url"]
+            installation_id = item["id"]
             break
-    if not access_token_url:
+    if not installation_id:
         raise ValueError("Access token URL not found")
 
-    resp = client.post(access_token_url, data={}).json()
-    return resp["token"]
+    resp = client.create_installation_access_token(installation_id)
+    return resp.json()["token"]
 
 
 CACHED_CLIENT = None

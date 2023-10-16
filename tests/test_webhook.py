@@ -1,5 +1,7 @@
 import json
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 from webhookclient import WebhookClient
 
@@ -11,9 +13,9 @@ TEST_DATA = TEST_ROOT / "data"
 
 SETTINGS = Settings(
     webhook_secret="foo",
-    github_app_id=1,
-    github_app_login="baz",
-    github_app_private_key="/dev/null",
+    github_app_id=408064,
+    github_app_login="nixpkgs-merge",
+    github_app_private_key=str(TEST_DATA / "github_app_key.pem"),
 )
 
 
@@ -44,7 +46,43 @@ def test_post_no_merge(webhook_client: WebhookClient) -> None:
     assert response_body["action"] == "no-command"
 
 
-def test_post_merge(webhook_client: WebhookClient) -> None:
+@dataclass
+class FakeHttpResponse:
+    path: Path
+    fake_headers: dict[str, str] = field(default_factory=dict)
+
+    def json(self) -> Any:
+        return json.loads(self.path.read_bytes())
+
+    def headers(self) -> dict[str, str]:
+        return self.fake_headers
+
+
+def test_post_merge(webhook_client: WebhookClient, mocker) -> None:
+    mock = mocker.patch("nixpkgs_merge_bot.github.GithubClient.app_installations")
+    mock.return_value = FakeHttpResponse(TEST_DATA / "app_installations.json")
+
+    mock = mocker.patch(
+        "nixpkgs_merge_bot.github.GithubClient.create_installation_access_token"
+    )
+    mock.return_value = FakeHttpResponse(TEST_DATA / "installation_access_token.json")
+
+    mock = mocker.patch("nixpkgs_merge_bot.github.GithubClient.pull_request")
+    mock.return_value = FakeHttpResponse(TEST_DATA / "pull_request.json")
+
+    mock = mocker.patch("nixpkgs_merge_bot.github.GithubClient.merge_pull_request")
+    mock.return_value = FakeHttpResponse(TEST_DATA / "merge_pull_request.json")
+
+
+    mock = mocker.patch("nixpkgs_merge_bot.github.GithubClient.pull_request_files")
+    mock.return_value = FakeHttpResponse(TEST_DATA / "pull_request_files.json")
+
+    mock = mocker.patch("nixpkgs_merge_bot.github.GithubClient.create_issue_comment")
+    mock.return_value = FakeHttpResponse(TEST_DATA / "create_issue_comment.json") # unused
+
+    mock = mocker.patch("nixpkgs_merge_bot.github.GithubClient.create_issue_reaction")
+    mock.return_value = FakeHttpResponse(TEST_DATA / "create_issue_reaction.json") # unused
+
     client = webhook_client.http_connect()
     create_event = (TEST_DATA / "issue_comment.merge.json").read_bytes()
     headers = {
@@ -60,4 +98,5 @@ def test_post_merge(webhook_client: WebhookClient) -> None:
     response = client.getresponse()
     response_body = json.loads(response.read().decode("utf-8"))
     assert response.status == 200, f"Response: {response.status}, {response_body}"
+    breakpoint()
     assert response_body["action"] == "merge"

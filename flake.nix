@@ -14,7 +14,11 @@
   outputs = inputs@{ self, flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } ({ lib, ... }:
       {
-        imports = [ ./nix/treefmt/flake-module.nix ];
+        imports = [
+          ./nix/checks/flake-module.nix
+          ./nix/treefmt/flake-module.nix
+          ./nix/modules/flake-module.nix
+        ];
         systems = [ "x86_64-linux" "aarch64-linux" ];
         perSystem = { self', pkgs, system, ... }: {
           packages.default = pkgs.python3.pkgs.callPackage ./default.nix { };

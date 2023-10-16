@@ -2,6 +2,7 @@
 , openssl
 , lib
 , pytest
+, pytest-mock
 , setuptools
 }:
 
@@ -10,7 +11,7 @@ buildPythonApplication {
   src = ./.;
   format = "pyproject";
   makeWrapperArgs = [ "--prefix PATH : ${lib.makeBinPath [ openssl ]}" ];
-  checkInputs = [ pytest openssl ];
+  checkInputs = [ pytest-mock pytest openssl ];
   nativeBuildInputs = [ setuptools ];
   meta = with lib; {
     description = "A bot that merges PRs on Nixpkgs";

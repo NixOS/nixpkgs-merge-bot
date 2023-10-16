@@ -1,0 +1,14 @@
+[
+  {
+    "sha": "2e6d3136cf9272090c4a4babda8946674c74a863",
+    "filename": "pkgs/by-name/ni/nixos-anywhere/package.nix",
+    "status": "modified",
+    "additions": 1,
+    "deletions": 1,
+    "changes": 2,
+    "blob_url": "https://github.com/nixpkgs-merge/nixpkgs/blob/c272a8a05b5776ef59a4c60b3b8f7c23a61defd0/pkgs%2Fby-name%2Fni%2Fnixos-anywhere%2Fpackage.nix",
+    "raw_url": "https://github.com/nixpkgs-merge/nixpkgs/raw/c272a8a05b5776ef59a4c60b3b8f7c23a61defd0/pkgs%2Fby-name%2Fni%2Fnixos-anywhere%2Fpackage.nix",
+    "contents_url": "https://api.github.com/repos/nixpkgs-merge/nixpkgs/contents/pkgs%2Fby-name%2Fni%2Fnixos-anywhere%2Fpackage.nix?ref=c272a8a05b5776ef59a4c60b3b8f7c23a61defd0",
+    "patch": "@@ -52,6 +52,6 @@ stdenv.mkDerivation (finalAttrs: {\n     license = licenses.mit;\n     platforms = platforms.all;\n     maintainers = [ maintainers.mic92 maintainers.lassulus maintainers.phaer ];\n-    # blabla mic is actually a good guy\n+    # mic is the original author of nixos-anywhere\n   };\n })"
+  }
+]
