@@ -1,15 +1,8 @@
 import os
 import socket
-from dataclasses import dataclass
 
+from .settings import Settings
 from .webhook.handler import GithubWebHook
-
-
-@dataclass
-class Settings:
-    webhook_secret: str
-    port: int = 3014
-    host: str = "[::]"
 
 
 def start_server(settings: Settings) -> None:
@@ -22,7 +15,7 @@ def start_server(settings: Settings) -> None:
 
             try:
                 while True:
-                    GithubWebHook(*sock.accept(), settings.webhook_secret)
+                    GithubWebHook(*sock.accept(), settings)
             except BlockingIOError:
                 # no more connections
                 pass
@@ -35,7 +28,7 @@ def start_server(settings: Settings) -> None:
             serversocket.listen()
             while True:
                 conn, addr = serversocket.accept()
-                GithubWebHook(conn, addr, settings.webhook_secret)
+                GithubWebHook(conn, addr, settings)
         finally:
             serversocket.shutdown(socket.SHUT_RDWR)
             serversocket.close()

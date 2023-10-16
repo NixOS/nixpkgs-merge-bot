@@ -8,15 +8,16 @@ import subprocess
 import time
 import urllib.parse
 import urllib.request
-from pathlib import Path
 from typing import Any
+
+from .settings import Settings
 
 
 def base64url(data: bytes) -> str:
     return base64.urlsafe_b64encode(data).rstrip(b"=").decode("utf-8")
 
 
-def rs256_sign(data: str, private_key: Path) -> str:
+def rs256_sign(data: str, private_key: str) -> str:
     signature = subprocess.run(
         ["openssl", "dgst", "-binary", "-sha256", "-sign", private_key],
         input=data.encode("utf-8"),
@@ -46,9 +47,16 @@ class HttpResponse:
         return self.raw.headers
 
 
+class GithubClientError(Exception):
+    code: int
+    reason: str
+    body: str
+
+
 class GithubClient:
     def __init__(self, api_token: str | None) -> None:
         self.api_token = api_token
+        self.token_age = time.time()
 
     def _request(
         self,
@@ -59,7 +67,10 @@ class GithubClient:
     ) -> Any:
         url = urllib.parse.urljoin("https://api.github.com/", path)
         headers = headers.copy()
-        headers = {"Content-Type": "application/json"}
+        headers = {
+            "Content-Type": "application/json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        }
         if self.api_token:
             headers["Authorization"] = f"Bearer {self.api_token}"
         headers["User-Agent"] = "nixpkgs-merge-bot"
@@ -77,9 +88,7 @@ class GithubClient:
                 resp_body = e.fp.read().decode("utf-8", "replace")
             except Exception:
                 pass
-            raise Exception(
-                f"Request for {method} {url} failed with {e.code} {e.reason}: {resp_body}"
-            ) from e
+            raise GithubClientError(e.code, e.reason, resp_body) from e
         return HttpResponse(resp)
 
     def get(self, path: str) -> Any:
@@ -97,8 +106,28 @@ class GithubClient:
     def pull_request_files(self, owner: str, repo: str, pr_number: int) -> Any:
         return self.get(f"/repos/{owner}/{repo}/pulls/{pr_number}/files")
 
+    def create_issue_comment(
+        self, owner: str, repo: str, issue_number: int, body: str
+    ) -> Any:
+        return self.post(
+            f"/repos/{owner}/{repo}/issues/{issue_number}/comments", {"body": body}
+        )
 
-def request_access_token(app_login: str, app_id: int, app_private_key: Path) -> str:
+    def create_issue_reaction(
+        self, owner: str, repo: str, issue_number: int, comment_id: int, reaction: str
+    ) -> Any:
+        return self.post(
+            f"/repos/{owner}/{repo}/issues/{issue_number}/comments/{comment_id}/reactions",
+            {"content": reaction},
+        )
+
+    def merge_pull_request(
+        self, owner: str, repo: str, pr_number: int, sha: str
+    ) -> Any:
+        return self.put(f"/repos/{owner}/{repo}/pulls/{pr_number}/merge")
+
+
+def request_access_token(app_login: str, app_id: int, app_private_key: str) -> str:
     jwt_payload = json.dumps(build_jwt_payload(app_id)).encode("utf-8")
     json_headers = json.dumps({"alg": "RS256", "typ": "JWT"}).encode("utf-8")
     encoded_jwt_parts = f"{base64url(json_headers)}.{base64url(jwt_payload)}"
@@ -120,6 +149,22 @@ def request_access_token(app_login: str, app_id: int, app_private_key: Path) -> 
     return resp["token"]
 
 
+CACHED_CLIENT = None
+
+
+def get_github_client(settings: Settings) -> GithubClient:
+    global CACHED_CLIENT
+    if CACHED_CLIENT and CACHED_CLIENT.token_age + 300 < time.time():
+        return CACHED_CLIENT
+    token = request_access_token(
+        settings.github_app_login,
+        settings.github_app_id,
+        settings.github_app_private_key,
+    )
+    CACHED_CLIENT = GithubClient(token)
+    return CACHED_CLIENT
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Get Github App Token")
     parser.add_argument(
@@ -133,8 +178,7 @@ def main() -> None:
         "--app-private-key-file", type=str, help="Github App Private Key", required=True
     )
     args = parser.parse_args()
-    app_private_key = Path(args.app_private_key_file)
-    token = request_access_token(args.login, args.app_id, app_private_key)
+    token = request_access_token(args.login, args.app_id, args.app_private_key_file)
     print(token)
 
 

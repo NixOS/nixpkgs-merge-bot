@@ -2,11 +2,10 @@ import json
 import logging
 import socket
 from http.server import BaseHTTPRequestHandler
-from typing import Any
 
+from ..settings import Settings
 from . import http_header
 from .errors import HttpError
-from .http_response import HttpResponse
 from .issue_comment import issue_comment
 from .secret import WebhookSecret
 
@@ -16,16 +15,14 @@ class GithubWebHook(BaseHTTPRequestHandler):
         self,
         conn: socket.socket,
         addr: tuple[str, int],
-        secret: str,
+        settings: Settings,
     ) -> None:
         self.rfile = conn.makefile("rb")
         self.wfile = conn.makefile("wb")
         self.client_address = addr
-        self.secret = WebhookSecret(secret)
+        self.secret = WebhookSecret(settings.webhook_secret)
+        self.settings = settings
         self.handle()
-
-    def issue_comment(self, body: dict[str, Any]) -> HttpResponse:
-        return issue_comment(body)
 
     # for testing
     def do_GET(self) -> None:  # noqa: N802
@@ -43,7 +40,7 @@ class GithubWebHook(BaseHTTPRequestHandler):
 
         match event_type:
             case "issue_comment":
-                handler = self.issue_comment
+                handler = issue_comment
             case _:
                 return self.send_error(
                     404, explain=f"event_type '{event_type}' not registered"
@@ -54,7 +51,7 @@ class GithubWebHook(BaseHTTPRequestHandler):
         except json.JSONDecodeError as e:
             return self.send_error(400, explain=f"invalid json: {e}")
 
-        resp = handler(payload)
+        resp = handler(payload, self.settings)
 
         self.send_response(resp.code)
         for k, v in resp.headers.items():
