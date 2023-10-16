@@ -22,8 +22,8 @@ def start_server(settings: Settings) -> None:
     else:
         serversocket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
         try:
-            serversocket.bind((settings.host, settings.port))
             serversocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            serversocket.bind((settings.host, settings.port))
             print(f"listen on {settings.host}:{settings.port}")
             serversocket.listen()
             while True:
