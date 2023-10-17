@@ -20,8 +20,7 @@
   # This is the test code that will check if our service is running correctly:
   testScript = ''
     start_all()
-    node1.succeed("curl --unix-socket /run/nixpkgs-merge-bot.sock http://x/")
-    # wait for our service to start
-    node1.wait_for_unit("nixpkgs-merge-bot.service")
+    node1.succeed("curl -Ss --unix-socket /run/nixpkgs-merge-bot.sock http://x/")
+    node1.succeed("curl -Ss --unix-socket /run/nixpkgs-merge-bot.sock http://x/")
   '';
 }

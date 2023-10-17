@@ -22,6 +22,7 @@ class GithubWebHook(BaseHTTPRequestHandler):
         self.client_address = addr
         self.secret = WebhookSecret(settings.webhook_secret)
         self.settings = settings
+        self.client_address = ('',) # avoid exception in BaseHTTPServer.py log_message()
         self.handle()
 
     # for testing
