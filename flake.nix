@@ -9,6 +9,15 @@
     # used for development
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
+
+    sops-nix.url = "github:Mic92/sops-nix";
+    sops-nix.inputs.nixpkgs.follows = "nixpkgs";
+
+    disko.url = "github:nix-community/disko";
+    disko.inputs.nixpkgs.follows = "nixpkgs";
+
+    srvos.url = "github:numtide/srvos";
+    srvos.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs@{ self, flake-parts, ... }:
@@ -18,10 +27,15 @@
           ./nix/checks/flake-module.nix
           ./nix/treefmt/flake-module.nix
           ./nix/modules/flake-module.nix
+          ./nix/machine.nix
         ];
         systems = [ "x86_64-linux" "aarch64-linux" ];
         perSystem = { self', pkgs, system, ... }: {
           packages.default = pkgs.python3.pkgs.callPackage ./default.nix { };
+          devShells.default = pkgs.mkShell {
+            packages = with pkgs; [ nixos-anywhere sops ]
+              ++ self'.packages.default.buildInputs;
+          };
           checks =
             let
               nixosMachines = lib.mapAttrs' (name: config: lib.nameValuePair "nixos-${name}" config.config.system.build.toplevel) ((lib.filterAttrs (_: config: config.pkgs.system == system)) self.nixosConfigurations);
