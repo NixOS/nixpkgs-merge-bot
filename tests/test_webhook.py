@@ -3,6 +3,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+import pytest
+from pytest_mock import MockerFixture
 from webhookclient import WebhookClient
 
 from nixpkgs_merge_bot.settings import Settings
@@ -58,36 +60,36 @@ class FakeHttpResponse:
         return self.fake_headers
 
 
-def test_post_merge(webhook_client: WebhookClient, mocker) -> None:
-    mock = mocker.patch("nixpkgs_merge_bot.github.GithubClient.app_installations")
-    mock.return_value = FakeHttpResponse(TEST_DATA / "app_installations.json")
+def default_mocks(mocker: MockerFixture) -> dict[str, Any]:
+    return {
+        "nixpkgs_merge_bot.github.GithubClient.app_installations": FakeHttpResponse(
+            TEST_DATA / "app_installations.json"
+        ),
+        "nixpkgs_merge_bot.github.GithubClient.create_installation_access_token": FakeHttpResponse(
+            TEST_DATA / "installation_access_token.json"
+        ),
+        "nixpkgs_merge_bot.github.GithubClient.pull_request": FakeHttpResponse(
+            TEST_DATA / "pull_request.json"
+        ),
+        "nixpkgs_merge_bot.github.GithubClient.merge_pull_request": FakeHttpResponse(
+            TEST_DATA / "merge_pull_request.json"
+        ),
+        "nixpkgs_merge_bot.github.GithubClient.pull_request_files": FakeHttpResponse(
+            TEST_DATA / "pull_request_files.json"
+        ),
+        "nixpkgs_merge_bot.nix.nix_eval": (TEST_DATA / "nix-eval.json").read_bytes(),
+        "nixpkgs_merge_bot.github.GithubClient.create_issue_comment": FakeHttpResponse(
+            TEST_DATA / "create_issue_comment.json"
+        ),  # unused
+        "nixpkgs_merge_bot.github.GithubClient.create_issue_reaction": FakeHttpResponse(
+            TEST_DATA / "create_issue_reaction.json"
+        ),  # unused
+    }
 
-    mock = mocker.patch(
-        "nixpkgs_merge_bot.github.GithubClient.create_installation_access_token"
-    )
-    mock.return_value = FakeHttpResponse(TEST_DATA / "installation_access_token.json")
 
-    mock = mocker.patch("nixpkgs_merge_bot.github.GithubClient.pull_request")
-    mock.return_value = FakeHttpResponse(TEST_DATA / "pull_request.json")
-
-    mock = mocker.patch("nixpkgs_merge_bot.github.GithubClient.merge_pull_request")
-    mock.return_value = FakeHttpResponse(TEST_DATA / "merge_pull_request.json")
-
-    mock = mocker.patch("nixpkgs_merge_bot.github.GithubClient.pull_request_files")
-    mock.return_value = FakeHttpResponse(TEST_DATA / "pull_request_files.json")
-
-    mock = mocker.patch("nixpkgs_merge_bot.nix.nix_eval")
-    mock.return_value = (TEST_DATA / "nix-eval.json").read_bytes()
-
-    mock = mocker.patch("nixpkgs_merge_bot.github.GithubClient.create_issue_comment")
-    mock.return_value = FakeHttpResponse(
-        TEST_DATA / "create_issue_comment.json"
-    )  # unused
-
-    mock = mocker.patch("nixpkgs_merge_bot.github.GithubClient.create_issue_reaction")
-    mock.return_value = FakeHttpResponse(
-        TEST_DATA / "create_issue_reaction.json"
-    )  # unused
+def test_post_merge(webhook_client: WebhookClient, mocker: MockerFixture) -> None:
+    for name, return_value in default_mocks(mocker).items():
+        mocker.patch(name, return_value=return_value)
 
     client = webhook_client.http_connect()
     create_event = (TEST_DATA / "issue_comment.merge.json").read_bytes()
@@ -107,36 +109,27 @@ def test_post_merge(webhook_client: WebhookClient, mocker) -> None:
     assert response_body["action"] == "merge"
 
 
-def test_post_merge_denied(webhook_client: WebhookClient, mocker) -> None:
-    mock = mocker.patch("nixpkgs_merge_bot.github.GithubClient.app_installations")
-    mock.return_value = FakeHttpResponse(TEST_DATA / "app_installations.json")
+@pytest.mark.parametrize(
+    "mock_overrides",
+    [
+        {
 
-    mock = mocker.patch(
-        "nixpkgs_merge_bot.github.GithubClient.create_installation_access_token"
-    )
-    mock.return_value = FakeHttpResponse(TEST_DATA / "installation_access_token.json")
-
-    mock = mocker.patch("nixpkgs_merge_bot.github.GithubClient.pull_request")
-    mock.return_value = FakeHttpResponse(TEST_DATA / "pull_request.json")
-
-    mock = mocker.patch("nixpkgs_merge_bot.github.GithubClient.merge_pull_request")
-    mock.return_value = FakeHttpResponse(TEST_DATA / "merge_pull_request.json")
-
-    mock = mocker.patch("nixpkgs_merge_bot.github.GithubClient.pull_request_files")
-    mock.return_value = FakeHttpResponse(TEST_DATA / "pull_request_files.json")
-
-    mock = mocker.patch("nixpkgs_merge_bot.nix.nix_eval")
-    mock.return_value = (TEST_DATA / "nix-eval.json").read_bytes()
-
-    mock = mocker.patch("nixpkgs_merge_bot.github.GithubClient.create_issue_comment")
-    mock.return_value = FakeHttpResponse(
-        TEST_DATA / "create_issue_comment.json"
-    )  # unused
-
-    mock = mocker.patch("nixpkgs_merge_bot.github.GithubClient.create_issue_reaction")
-    mock.return_value = FakeHttpResponse(
-        TEST_DATA / "create_issue_reaction.json"
-    )  # unused
+            "nixpkgs_merge_bot.nix.nix_eval": (
+                TEST_DATA / "nix-eval-no-maintainer.json"
+            ).read_bytes()
+            },
+        {
+            "nixpkgs_merge_bot.nix.nix_eval": (
+                TEST_DATA / "nix-eval-wrong-maintainer.json"
+            ).read_bytes()
+        },
+    ],
+)
+def test_post_merge_maintainer(webhook_client: WebhookClient, mocker: MockerFixture, mock_overrides: dict[str, Any]) -> None:
+    mocks = default_mocks(mocker)
+    mocks.update(mock_overrides)
+    for name, return_value in mocks.items():
+        mocker.patch(name, return_value=return_value)
 
     client = webhook_client.http_connect()
     create_event = (TEST_DATA / "issue_comment.merge.json").read_bytes()
@@ -153,4 +146,4 @@ def test_post_merge_denied(webhook_client: WebhookClient, mocker) -> None:
     response = client.getresponse()
     response_body = json.loads(response.read().decode("utf-8"))
     assert response.status == 200, f"Response: {response.status}, {response_body}"
-    assert response_body["action"] == "merge"
+    assert response_body["action"] == "not-permitted"
