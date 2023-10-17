@@ -51,10 +51,10 @@ in
         Restart = "on-failure";
         ExecStart = pkgs.writeShellScript "nixpkgs-merge-bot" ''
           ${lib.getExe cfg.package} \
-            --webhook-secret <(cat $CREDENTIALS_DIRECTORY/webhook-secret) \
+            --webhook-secret $CREDENTIALS_DIRECTORY/webhook-secret \
             --github-app-login ${cfg.github-app-login} \
             --github-app-id ${toString cfg.github-app-id} \
-            --github-app-private-key <(cat $CREDENTIALS_DIRECTORY/github-app-private-key)
+            --github-app-private-key $CREDENTIALS_DIRECTORY/github-app-private-key
         '';
       };
     };

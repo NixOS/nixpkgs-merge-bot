@@ -8,7 +8,7 @@ def parse_args() -> Settings:
     parser.add_argument("--port", type=int, default=3014, help="port to listen on")
     parser.add_argument("--host", type=str, default="::", help="host to listen on")
     parser.add_argument(
-        "--webhook-secret", type=str, required=True, help="github webhook secret"
+        "--webhook-secret", type=str, required=True, help="github webhook secret path"
     )
     parser.add_argument(
         "--bot-name", type=str, default="nixpkgs-merge-bot", help="bot name"
@@ -26,7 +26,7 @@ def parse_args() -> Settings:
         "--github-app-private-key",
         type=str,
         required=True,
-        help="github app private key",
+        help="Path to github app private key",
     )
     parser.add_argument("--debug", action="store_true", help="enable debug logging")
     args = parser.parse_args()

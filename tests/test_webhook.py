@@ -14,10 +14,10 @@ TEST_ROOT = Path(__file__).parent
 TEST_DATA = TEST_ROOT / "data"
 
 SETTINGS = Settings(
-    webhook_secret="foo",
+    webhook_secret=TEST_DATA / "webhook-secret.txt",
     github_app_id=408064,
     github_app_login="nixpkgs-merge",
-    github_app_private_key=str(TEST_DATA / "github_app_key.pem"),
+    github_app_private_key=TEST_DATA / "github_app_key.pem",
 )
 
 
@@ -113,11 +113,10 @@ def test_post_merge(webhook_client: WebhookClient, mocker: MockerFixture) -> Non
     "mock_overrides",
     [
         {
-
             "nixpkgs_merge_bot.nix.nix_eval": (
                 TEST_DATA / "nix-eval-no-maintainer.json"
             ).read_bytes()
-            },
+        },
         {
             "nixpkgs_merge_bot.nix.nix_eval": (
                 TEST_DATA / "nix-eval-wrong-maintainer.json"
@@ -125,7 +124,9 @@ def test_post_merge(webhook_client: WebhookClient, mocker: MockerFixture) -> Non
         },
     ],
 )
-def test_post_merge_maintainer(webhook_client: WebhookClient, mocker: MockerFixture, mock_overrides: dict[str, Any]) -> None:
+def test_post_merge_maintainer(
+    webhook_client: WebhookClient, mocker: MockerFixture, mock_overrides: dict[str, Any]
+) -> None:
     mocks = default_mocks(mocker)
     mocks.update(mock_overrides)
     for name, return_value in mocks.items():

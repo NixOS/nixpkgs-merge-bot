@@ -8,6 +8,7 @@ import subprocess
 import time
 import urllib.parse
 import urllib.request
+from pathlib import Path
 from typing import Any
 
 from .settings import Settings
@@ -17,7 +18,7 @@ def base64url(data: bytes) -> str:
     return base64.urlsafe_b64encode(data).rstrip(b"=").decode("utf-8")
 
 
-def rs256_sign(data: str, private_key: str) -> str:
+def rs256_sign(data: str, private_key: Path) -> str:
     signature = subprocess.run(
         ["openssl", "dgst", "-binary", "-sha256", "-sign", private_key],
         input=data.encode("utf-8"),
@@ -140,7 +141,7 @@ class GithubClient:
         return self.post(f"/app/installations/{installation_id}/access_tokens", data={})
 
 
-def request_access_token(app_login: str, app_id: int, app_private_key: str) -> str:
+def request_access_token(app_login: str, app_id: int, app_private_key: Path) -> str:
     jwt_payload = json.dumps(build_jwt_payload(app_id)).encode("utf-8")
     json_headers = json.dumps({"alg": "RS256", "typ": "JWT"}).encode("utf-8")
     encoded_jwt_parts = f"{base64url(json_headers)}.{base64url(jwt_payload)}"

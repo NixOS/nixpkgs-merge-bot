@@ -1,13 +1,14 @@
 import hashlib
 import hmac
 from email.message import Message
+from pathlib import Path
 
 from .errors import HttpError
 
 
 class WebhookSecret:
-    def __init__(self, secret: str) -> None:
-        self.secret = secret
+    def __init__(self, secret: Path) -> None:
+        self.secret = secret.read_text().strip()
 
     def validate_signature(self, body: bytes, headers: Message) -> bool:
         # Get the signature from the payload
