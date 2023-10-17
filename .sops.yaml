@@ -1,9 +1,11 @@
 keys:
   - &joerg age17n64ahe3wesh8l8lj0zylf4nljdmqn28hvqns2g7hgm9mdkhlsvsjuvkxz
   - &lassulus age1eq0e6uhjj2tja8v338tkdz8ema2aw5anpuyaq2uru7rt4lq7msyqqut6m2
+  - &nixpkgs-merge-bot age1553268gzdpc2mg5l7cn678d9n0y8ycjpx0y5d7fk6e6u0a5kxe0qcrp02r
 creation_rules:
-  - path_regex: secrets.yaml$
+  - path_regex: ^secrets.yaml$
     key_groups:
     - age:
       - *joerg
       - *lassulus
+      - *nixpkgs-merge-bot
