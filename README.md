@@ -29,6 +29,8 @@ through a comment detailing the discrepancies.
 To ensure security and a focused utility, the bot adheres to specific
 limitations:
 
+- Only compatible with packages located under `pkgs/by-name/*`.
+
 - For now we only allow pull requests done by r-ryantm to be merged
 
 - Supports merging only into the `master`, `staging`, and `staging-next`
