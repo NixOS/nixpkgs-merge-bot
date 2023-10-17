@@ -128,6 +128,11 @@ def test_post_merge(webhook_client: WebhookClient, mocker: MockerFixture) -> Non
                 TEST_DATA / "nix-eval-wrong-maintainer.json"
             ).read_bytes()
         },
+        {
+            "nixpkgs_merge_bot.github.GithubClient.pull_request_files": FakeHttpResponse(
+                TEST_DATA / "pull_request_files.not-by-name.json"
+            )
+        },
     ],
 )
 def test_post_merge_maintainer(

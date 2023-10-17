@@ -92,17 +92,15 @@ def merge_check(
 
     for file in body:
         filename = file["filename"]
-        # Currently disabled this check because we limit the to only allow ryantm-r PRs to be merged.
-        # if not filename.startswith("pkgs/by-name/"):
-        #    permitted = False
-        #    decline_reasons[filename] = "path is not in pkgs/by-name/"
-        # else:
-        maintainers = get_package_maintainers(Path(filename))
-        if not is_maintainer(github_id, maintainers):
+        if not filename.startswith("pkgs/by-name/"):
             permitted = False
-            decline_reasons[
-                filename
-            ] = "github id is not in maintainers, valid maintainers are: " + ", ".join(
-                m.name for m in maintainers
-            )
+            decline_reasons[filename] = "path is not in pkgs/by-name/"
+        else:
+            maintainers = get_package_maintainers(Path(filename))
+            if not is_maintainer(github_id, maintainers):
+                permitted = False
+                decline_reasons[filename] = (
+                    "github id is not in maintainers, valid maintainers are: "
+                    + ", ".join(m.name for m in maintainers)
+                )
     return MergeResponse(permitted, decline_reasons, sha)
