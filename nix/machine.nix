@@ -21,6 +21,17 @@
           github-app-private-key-file = config.sops.secrets.github_app_key.path;
           restricted-authors = [ "r-ryantm" ];
         };
+
+        system.stateVersion = "23.11";
+
+        services.nginx.virtualHosts."nixpkgs-merge-bot.nixos.org" = {
+          forceSSL = true;
+          enableACME = true;
+          locations."/" = {
+            proxyPass = "unix:/run/nixpkgs-merge-bot.sock";
+            recommendedProxySettings = true;
+          };
+        };
       })
       ./modules/nixpkgs-merge-bot.nix
       ./modules/sops.nix
