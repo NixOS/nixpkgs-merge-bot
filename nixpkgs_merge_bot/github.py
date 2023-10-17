@@ -132,7 +132,9 @@ class GithubClient:
     def merge_pull_request(
         self, owner: str, repo: str, pr_number: int, sha: str
     ) -> HttpResponse:
-        return self.put(f"/repos/{owner}/{repo}/pulls/{pr_number}/merge", data={"sha": sha})
+        return self.put(
+            f"/repos/{owner}/{repo}/pulls/{pr_number}/merge", data={"sha": sha}
+        )
 
     def create_installation_access_token(self, installation_id: int) -> HttpResponse:
         return self.post(f"/app/installations/{installation_id}/access_tokens", data={})
