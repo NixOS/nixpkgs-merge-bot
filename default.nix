@@ -18,5 +18,6 @@ buildPythonApplication {
     homepage = "https://github.com/Mic92/nixpkgs-merge-bot";
     maintainers = with maintainers; [ mic92 lassulus ];
     license = licenses.mit;
+    mainProgram = "nixpkgs-merge-bot";
   };
 }
