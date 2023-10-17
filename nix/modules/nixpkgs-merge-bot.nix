@@ -20,7 +20,7 @@ in
     };
     restricted-authors = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      default = [];
+      default = [ ];
       description = "list of restricted authors";
     };
     github-app-login = lib.mkOption {

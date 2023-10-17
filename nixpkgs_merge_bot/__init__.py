@@ -1,7 +1,7 @@
 import argparse
+from pathlib import Path
 
 from .server import Settings, start_server
-from pathlib import Path
 
 
 def parse_args() -> Settings:
