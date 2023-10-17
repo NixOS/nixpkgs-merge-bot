@@ -20,5 +20,5 @@
       inputs.srvos.nixosModules.hardware-hetzner-cloud
       inputs.srvos.nixosModules.server
     ];
-  };lib.mkForce
+  };
 }
