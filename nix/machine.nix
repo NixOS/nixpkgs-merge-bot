@@ -10,8 +10,8 @@
         ];
         boot.loader.grub.devices = lib.mkForce [ "/dev/sda" ];
 
-        sops.secrets.webhook_secret = {};
-        sops.secrets.github_app_key = {};
+        sops.secrets.webhook_secret = { };
+        sops.secrets.github_app_key = { };
         services.nixpkgs-merge-bot = {
           enable = true;
           hostname = "nixpkgs-merge-bot.nixos.org";

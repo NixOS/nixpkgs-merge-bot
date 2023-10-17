@@ -18,6 +18,7 @@ SETTINGS = Settings(
     github_app_id=408064,
     github_app_login="nixpkgs-merge",
     github_app_private_key=TEST_DATA / "github_app_key.pem",
+    restricted_authors=["r-ryantm"],
 )
 
 
@@ -115,6 +116,11 @@ def test_post_merge(webhook_client: WebhookClient, mocker: MockerFixture) -> Non
         {
             "nixpkgs_merge_bot.nix.nix_eval": (
                 TEST_DATA / "nix-eval-no-maintainer.json"
+            ).read_bytes()
+        },
+        {
+            "nixpkgs_merge_bot.nix.nix_eval": (
+                TEST_DATA / "nix-eval-wrong-maintainer.json"
             ).read_bytes()
         },
         {

@@ -1,6 +1,7 @@
 import argparse
 
 from .server import Settings, start_server
+from pathlib import Path
 
 
 def parse_args() -> Settings:
@@ -12,6 +13,12 @@ def parse_args() -> Settings:
     )
     parser.add_argument(
         "--bot-name", type=str, default="nixpkgs-merge-bot", help="bot name"
+    )
+    parser.add_argument(
+        "--restricted-authors",
+        type=str,
+        default="",
+        help="comma separated list of PR authors that can be merged",
     )
     parser.add_argument(
         "--github-app-login",
@@ -32,12 +39,13 @@ def parse_args() -> Settings:
     args = parser.parse_args()
     return Settings(
         bot_name=args.bot_name,
-        webhook_secret=args.webhook_secret,
+        webhook_secret=Path(args.webhook_secret),
         host=args.host,
         port=args.port,
         github_app_login=args.github_app_login,
         github_app_id=args.github_app_id,
         github_app_private_key=args.github_app_private_key,
+        restricted_authors=args.restricted_authors.split(" "),
     )
 
 

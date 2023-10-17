@@ -61,10 +61,15 @@ def issue_comment(body: dict[str, Any], settings: Settings) -> HttpResponse:
     if not re.match(rf"@{bot_name}\s+merge", stripped):
         return issue_response("no-command")
 
-    check = merge_check(
-        issue.repo_owner, issue.repo_name, issue.issue_number, issue.user_id
-    )
     client = get_github_client(settings)
+    check = merge_check(
+        client,
+        issue.repo_owner,
+        issue.repo_name,
+        issue.issue_number,
+        issue.user_id,
+        settings,
+    )
     client.create_issue_reaction(
         issue.repo_owner,
         issue.repo_name,

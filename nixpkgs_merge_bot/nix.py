@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .github import GithubClient
+from .settings import Settings
 
 
 @dataclass
@@ -56,15 +57,27 @@ def is_maintainer(github_id: int, maintainers: list[Maintainer]) -> bool:
 
 
 def merge_check(
-    repo_owner: str, repo_name: str, pr_number: int, github_id: int
+    client: GithubClient,
+    repo_owner: str,
+    repo_name: str,
+    pr_number: int,
+    github_id: int,
+    settings: Settings,
 ) -> MergeResponse:
-    c = GithubClient(None)
-    pr = c.pull_request(repo_owner, repo_name, pr_number).json()
-    files_response = c.pull_request_files(repo_owner, repo_name, pr_number)
+    pr = client.pull_request(repo_owner, repo_name, pr_number).json()
+    files_response = client.pull_request_files(repo_owner, repo_name, pr_number)
     decline_reasons = {}
     permitted = True
     body = files_response.json()
     sha = pr["head"]["sha"]
+
+    if pr["user"]["login"] not in settings.restricted_authors:
+        permitted = False
+        decline_reasons[
+            "pr"
+        ] = f"pr author is not in restricted authors list: {settings.restricted_authors}"
+        return MergeResponse(permitted, decline_reasons, sha)
+
     if pr["state"] != "open":
         permitted = False
         decline_reasons["pr"] = "pr is not open"
@@ -79,15 +92,17 @@ def merge_check(
 
     for file in body:
         filename = file["filename"]
-        if not filename.startswith("pkgs/by-name/"):
+        # Currently disabled this check because we limit the to only allow ryantm-r PRs to be merged.
+        # if not filename.startswith("pkgs/by-name/"):
+        #    permitted = False
+        #    decline_reasons[filename] = "path is not in pkgs/by-name/"
+        # else:
+        maintainers = get_package_maintainers(Path(filename))
+        if not is_maintainer(github_id, maintainers):
             permitted = False
-            decline_reasons[filename] = "path is not in pkgs/by-name/"
-        else:
-            maintainers = get_package_maintainers(Path(filename))
-            if not is_maintainer(github_id, maintainers):
-                permitted = False
-                decline_reasons[filename] = (
-                    "github id is not in maintainers, valid maintainers are: "
-                    + ", ".join(m.name for m in maintainers)
-                )
+            decline_reasons[
+                filename
+            ] = "github id is not in maintainers, valid maintainers are: " + ", ".join(
+                m.name for m in maintainers
+            )
     return MergeResponse(permitted, decline_reasons, sha)
