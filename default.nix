@@ -11,8 +11,12 @@ buildPythonApplication {
   src = ./.;
   format = "pyproject";
   makeWrapperArgs = [ "--prefix PATH : ${lib.makeBinPath [ openssl ]}" ];
-  checkInputs = [ pytest-mock pytest openssl ];
+  doCheck = true;
   nativeBuildInputs = [ setuptools ];
+  nativeCheckInputs = [ pytest-mock pytest openssl ];
+  checkPhase = ''
+    pytest ./tests
+  '';
   meta = with lib; {
     description = "A bot that merges PRs on Nixpkgs";
     homepage = "https://github.com/Mic92/nixpkgs-merge-bot";
