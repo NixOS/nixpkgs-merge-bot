@@ -10,7 +10,7 @@ from .settings import Settings
 @dataclass
 class MergeResponse:
     permitted: bool
-    decline_reasons: dict[str, str]
+    decline_reasons: list[str]
     sha: str
 
 
@@ -66,41 +66,41 @@ def merge_check(
 ) -> MergeResponse:
     pr = client.pull_request(repo_owner, repo_name, pr_number).json()
     files_response = client.pull_request_files(repo_owner, repo_name, pr_number)
-    decline_reasons = {}
+    decline_reasons = []
     permitted = True
     body = files_response.json()
     sha = pr["head"]["sha"]
 
     if pr["user"]["login"] not in settings.restricted_authors:
         permitted = False
-        decline_reasons[
-            "pr"
-        ] = f"pr author is not in restricted authors list: {settings.restricted_authors}"
+        decline_reasons.append(
+            f"pr author is not in restricted authors list: {settings.restricted_authors}"
+        )
         return MergeResponse(permitted, decline_reasons, sha)
 
     if pr["state"] != "open":
         permitted = False
-        decline_reasons["pr"] = "pr is not open"
+        decline_reasons.append("pr is not open")
         return MergeResponse(permitted, decline_reasons, sha)
 
     if pr["base"]["ref"] not in ("staging", "staging-next", "master"):
         permitted = False
-        decline_reasons[
-            "pr"
-        ] = "pr is not targed to any of the allowed branches: staging, staging-next, master"
+        decline_reasons.append(
+            "pr is not targeted to any of the allowed branches: staging, staging-next, master"
+        )
         return MergeResponse(permitted, decline_reasons, sha)
 
     for file in body:
         filename = file["filename"]
         if not filename.startswith("pkgs/by-name/"):
             permitted = False
-            decline_reasons[filename] = "path is not in pkgs/by-name/"
+            decline_reasons.append(f"{filename} is not in pkgs/by-name/")
         else:
             maintainers = get_package_maintainers(Path(filename))
             if not is_maintainer(github_id, maintainers):
                 permitted = False
-                decline_reasons[filename] = (
-                    "github id is not in maintainers, valid maintainers are: "
+                decline_reasons.append(
+                    f"github id: {github_id} is not in maintainers, valid maintainers are: "
                     + ", ".join(m.name for m in maintainers)
                 )
     return MergeResponse(permitted, decline_reasons, sha)
