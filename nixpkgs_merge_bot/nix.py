@@ -103,4 +103,11 @@ def merge_check(
                     f"github id: {github_id} is not in maintainers, valid maintainers are: "
                     + ", ".join(m.name for m in maintainers)
                 )
+    # merging is disabled for now, until we have sufficient consensus
+    permitted = False
+    if decline_reasons == []:
+        decline_reasons.append(
+            "bot is running in dry-run mode, merge declined but would have merged if merging is enabled"
+        )
+
     return MergeResponse(permitted, decline_reasons, sha)
