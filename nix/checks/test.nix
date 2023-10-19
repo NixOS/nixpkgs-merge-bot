@@ -13,6 +13,7 @@
         github-app-login = "nixpkgs-merge-bot";
         github-app-id = 1234;
         github-app-private-key-file = pkgs.writeText "dummy.key" "key";
+        repo-path = pkgs.path;
       };
 
     };

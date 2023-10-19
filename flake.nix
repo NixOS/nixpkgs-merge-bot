@@ -34,7 +34,8 @@
           packages.default = pkgs.python3.pkgs.callPackage ./default.nix { };
           devShells.default = pkgs.mkShell {
             packages = with pkgs; [ nixos-anywhere sops ]
-              ++ self'.packages.default.buildInputs;
+              ++ self'.packages.default.buildInputs
+              ++ self'.packages.default.nativeBuildInputs;
           };
           checks =
             let

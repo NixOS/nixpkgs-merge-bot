@@ -12,6 +12,8 @@ from nixpkgs_merge_bot.webhook.handler import GithubWebHook
 
 TEST_ROOT = Path(__file__).parent
 TEST_DATA = TEST_ROOT / "data"
+DUMMY_NIXPKGS = TEST_ROOT / "nixpkgs"
+DUMMY_NIXPKGS.mkdir(exist_ok=True)
 
 SETTINGS = Settings(
     webhook_secret=TEST_DATA / "webhook-secret.txt",
@@ -19,6 +21,7 @@ SETTINGS = Settings(
     github_app_login="nixpkgs-merge",
     github_app_private_key=TEST_DATA / "github_app_key.pem",
     restricted_authors=["r-ryantm"],
+    repo_path=DUMMY_NIXPKGS,
 )
 
 
@@ -78,6 +81,7 @@ def default_mocks(mocker: MockerFixture) -> dict[str, Any]:
         "nixpkgs_merge_bot.github.GithubClient.pull_request_files": FakeHttpResponse(
             TEST_DATA / "pull_request_files.json"
         ),
+        "nixpkgs_merge_bot.git.checkout_newest_master": "",
         "nixpkgs_merge_bot.nix.nix_eval": (TEST_DATA / "nix-eval.json").read_bytes(),
         "nixpkgs_merge_bot.github.GithubClient.create_issue_comment": FakeHttpResponse(
             TEST_DATA / "create_issue_comment.json"

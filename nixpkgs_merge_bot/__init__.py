@@ -35,6 +35,12 @@ def parse_args() -> Settings:
         required=True,
         help="Path to github app private key",
     )
+    parser.add_argument(
+        "--repo-path",
+        type=str,
+        default="nixpkgs",
+        help="Path where the nixpkg repo is stored. Default to nixpkgs",
+    )
     parser.add_argument("--debug", action="store_true", help="enable debug logging")
     args = parser.parse_args()
     return Settings(
@@ -46,6 +52,7 @@ def parse_args() -> Settings:
         github_app_id=args.github_app_id,
         github_app_private_key=args.github_app_private_key,
         restricted_authors=args.restricted_authors.split(" "),
+        repo_path=args.repo_path,
     )
 
 

@@ -20,16 +20,16 @@ class Maintainer:
     name: str
 
 
-def nix_eval(url: str) -> bytes:
+def nix_eval(folder: Path, attr: str) -> bytes:
     proc = subprocess.run(
         [
-            "nix",
-            "eval",
-            "--experimental-features",
-            "nix-command flakes",
-            "--refresh",
+            "nix-instantiate",
+            "--eval",
+            "--strict",
             "--json",
-            url,
+            str(folder),
+            "-A",
+            attr,
         ],
         check=True,
         stdin=subprocess.PIPE,
@@ -38,10 +38,13 @@ def nix_eval(url: str) -> bytes:
     return proc.stdout
 
 
-def get_package_maintainers(path: Path) -> list[Maintainer]:
+def get_package_maintainers(settings: Settings, path: Path) -> list[Maintainer]:
+    from .git import checkout_newest_master
+
+    checkout_newest_master(settings.repo_path)
     package_name = path.parts[3]
     # TODO maybe we want to check the merge target remote here?
-    proc = nix_eval(f"github:nixos/nixpkgs/master#{package_name}.meta.maintainers")
+    proc = nix_eval(settings.repo_path, f"{package_name}.meta.maintainers")
     maintainers = json.loads(proc.decode("utf-8"))
     return [
         Maintainer(maintainer["githubId"], maintainer["github"])
@@ -74,7 +77,8 @@ def merge_check(
     if pr["user"]["login"] not in settings.restricted_authors:
         permitted = False
         decline_reasons.append(
-            f"pr author is not in restricted authors list: {settings.restricted_authors}"
+            "pr author is not in restricted authors list: "
+            + ", ".join(settings.restricted_authors)
         )
         return MergeResponse(permitted, decline_reasons, sha)
 
@@ -96,7 +100,7 @@ def merge_check(
             permitted = False
             decline_reasons.append(f"{filename} is not in pkgs/by-name/")
         else:
-            maintainers = get_package_maintainers(Path(filename))
+            maintainers = get_package_maintainers(settings, Path(filename))
             if not is_maintainer(github_id, maintainers):
                 permitted = False
                 decline_reasons.append(

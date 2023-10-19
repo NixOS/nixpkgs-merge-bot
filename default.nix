@@ -4,16 +4,17 @@
 , pytest
 , pytest-mock
 , setuptools
+, git
 }:
 
 buildPythonApplication {
   name = "nixpkgs-merge-bot";
   src = ./.;
   format = "pyproject";
-  makeWrapperArgs = [ "--prefix PATH : ${lib.makeBinPath [ openssl ]}" ];
+  makeWrapperArgs = [ "--prefix PATH : ${lib.makeBinPath [ openssl git ]}" ];
   doCheck = true;
   nativeBuildInputs = [ setuptools ];
-  nativeCheckInputs = [ pytest-mock pytest openssl ];
+  nativeCheckInputs = [ pytest-mock pytest openssl git ];
   checkPhase = ''
     pytest ./tests
   '';

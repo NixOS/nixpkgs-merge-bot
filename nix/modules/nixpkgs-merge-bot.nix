@@ -40,6 +40,11 @@ in
       default = pkgs.python3.pkgs.callPackage ../../default.nix { };
       description = "nixpkgs-merge-bot package";
     };
+    repo-path = lib.mkOption {
+      type = lib.types.path;
+      default = "/var/lib/nixpkgs-merge-bot/nixpkgs";
+      description = "path to the repository";
+    };
   };
   # TODO: from Mic92 to lassulus
   # https://github.com/Mic92/buildbot-nix/blob/main/nix/checks/lib.nix
@@ -60,8 +65,10 @@ in
             --github-app-login ${cfg.github-app-login} \
             --github-app-id ${toString cfg.github-app-id} \
             --restricted-authors "${toString cfg.restricted-authors}" \
-            --github-app-private-key $CREDENTIALS_DIRECTORY/github-app-private-key
+            --github-app-private-key $CREDENTIALS_DIRECTORY/github-app-private-key \
+            --repo-path ${cfg.repo-path}
         '';
+        StateDir = "nixpkgs-merge-bot";
       };
     };
     systemd.sockets.nixpkgs-merge-bot = {
