@@ -107,7 +107,7 @@ def test_post_merge(webhook_client: WebhookClient, mocker: MockerFixture) -> Non
     response = client.getresponse()
     response_body = json.loads(response.read().decode("utf-8"))
     assert response.status == 200, f"Response: {response.status}, {response_body}"
-    assert response_body["action"] == "merge"
+    assert response_body["action"] == "not-permitted"  # merges are disabled for now
 
 
 @pytest.mark.parametrize(

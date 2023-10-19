@@ -79,8 +79,8 @@ def issue_comment(body: dict[str, Any], settings: Settings) -> HttpResponse:
     )
     if not check.permitted:
         msg = f"@{issue.user_login} merge not permitted: \n"
-        for filename, reason in check.decline_reasons.items():
-            msg += f"{filename}: {reason}\n"
+        for reason in check.decline_reasons:
+            msg += f"{reason}\n"
         client.create_issue_comment(
             issue.repo_owner,
             issue.repo_name,
