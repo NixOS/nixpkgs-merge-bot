@@ -23,15 +23,6 @@
         };
 
         system.stateVersion = "23.11";
-
-        services.nginx.virtualHosts."nixpkgs-merge-bot.nixos.org" = {
-          forceSSL = true;
-          enableACME = true;
-          locations."/" = {
-            proxyPass = "unix:/run/nixpkgs-merge-bot.sock";
-            recommendedProxySettings = true;
-          };
-        };
       })
       ./modules/nixpkgs-merge-bot.nix
       ./modules/sops.nix
