@@ -33,7 +33,7 @@
         perSystem = { self', pkgs, system, ... }: {
           packages.default = pkgs.python3.pkgs.callPackage ./default.nix { };
           devShells.default = pkgs.mkShell {
-            packages = with pkgs; [ nixos-anywhere sops ]
+            packages = with pkgs; [ nixos-anywhere sops openssl ]
               ++ self'.packages.default.buildInputs;
           };
           checks =
