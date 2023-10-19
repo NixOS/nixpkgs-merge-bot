@@ -23,14 +23,12 @@ class Maintainer:
 def nix_eval(folder: Path, attr: str) -> bytes:
     proc = subprocess.run(
         [
-            "nix",
-            "eval",
-            "-f",
-            str(folder),
-            "--experimental-features",
-            "nix-command flakes",
-            "--refresh",
+            "nix-instantiate",
+            "--eval",
+            "--strict",
             "--json",
+            str(folder),
+            "-A",
             attr,
         ],
         check=True,
