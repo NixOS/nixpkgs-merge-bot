@@ -13,4 +13,4 @@ class Settings:
     port: int = 3014
     host: str = "[::]"
     repo: str = "https://github.com/nixos/nixpkgs"
-    repo_path: Path = Path("/tmp/nixpkgs")
+    repo_path: Path = Path("nixpkgs")

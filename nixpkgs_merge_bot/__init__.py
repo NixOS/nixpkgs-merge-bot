@@ -38,8 +38,8 @@ def parse_args() -> Settings:
     parser.add_argument(
         "--repo-path",
         type=str,
-        default="/tmp/nixpkgs",
-        help="Path where the nixpkg repo is stored. Default to /tmpp/nixpkgs",
+        default="nixpkgs",
+        help="Path where the nixpkg repo is stored. Default to nixpkgs",
     )
     parser.add_argument("--debug", action="store_true", help="enable debug logging")
     args = parser.parse_args()

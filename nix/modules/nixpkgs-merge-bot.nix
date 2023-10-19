@@ -42,7 +42,7 @@ in
     };
     repo-path = lib.mkOption {
       type = lib.types.path;
-      default = "/tmp/nixpkgs";
+      default = "/var/lib/nixpkgs-merge-bot/nixpkgs";
       description = "path to the repository";
     };
   };
@@ -68,6 +68,7 @@ in
             --github-app-private-key $CREDENTIALS_DIRECTORY/github-app-private-key \
             --repo-path ${cfg.repo-path}
         '';
+        StateDir = "nixpkgs-merge-bot";
       };
     };
     systemd.sockets.nixpkgs-merge-bot = {
