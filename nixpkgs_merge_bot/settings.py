@@ -12,3 +12,5 @@ class Settings:
     bot_name: str = "nixpkgs-merge-bot"
     port: int = 3014
     host: str = "[::]"
+    repo: str = "https://github.com/nixos/nixpkgs"
+    repo_path: Path = Path("/tmp/nixpkgs")

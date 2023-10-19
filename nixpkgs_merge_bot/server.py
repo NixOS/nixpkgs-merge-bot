@@ -1,11 +1,13 @@
 import os
 import socket
 
+from .git import clone
 from .settings import Settings
 from .webhook.handler import GithubWebHook
 
 
 def start_server(settings: Settings) -> None:
+    clone(settings.repo, settings.repo_path)
     nfds = os.environ.get("LISTEN_FDS", None)
     if nfds is not None:
         fds = range(3, 3 + int(nfds))
