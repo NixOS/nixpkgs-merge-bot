@@ -82,7 +82,7 @@ in
       enableACME = true;
       forceSSL = true;
       locations."/" = {
-        proxyPass = "/run/nixpkgs-merge-bot.sock";
+        proxyPass = "http://unix:/run/nixpkgs-merge-bot.sock";
         proxyWebsockets = true;
         recommendedProxySettings = true;
       };
