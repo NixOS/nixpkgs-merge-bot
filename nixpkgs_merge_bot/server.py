@@ -21,6 +21,9 @@ def start_server(settings: Settings) -> None:
             except BlockingIOError:
                 # no more connections
                 pass
+            except OSError:
+                # connection closed
+                pass
     else:
         serversocket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
         try:
@@ -29,8 +32,12 @@ def start_server(settings: Settings) -> None:
             print(f"listen on {settings.host}:{settings.port}")
             serversocket.listen()
             while True:
-                conn, addr = serversocket.accept()
-                GithubWebHook(conn, addr, settings)
+                try:
+                    conn, addr = serversocket.accept()
+                    GithubWebHook(conn, addr, settings)
+                except OSError:
+                    # connection closed
+                    pass
         finally:
             serversocket.shutdown(socket.SHUT_RDWR)
             serversocket.close()
