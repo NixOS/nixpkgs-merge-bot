@@ -4,6 +4,9 @@ on:
   workflow_dispatch:
   schedule:
     - cron:  '51 2 * * *'
+permissions:
+  pull-requests: write
+  contents: write
 jobs:
   update-submodules:
     runs-on: ubuntu-latest
