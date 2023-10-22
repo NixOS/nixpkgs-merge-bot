@@ -1,0 +1,21 @@
+name: "Update github ip whitelist"
+on:
+  repository_dispatch:
+  workflow_dispatch:
+  schedule:
+    - cron:  '51 2 * * *'
+jobs:
+  update-submodules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Update ip whitelist
+        run: |
+          curl https://api.github.com/meta | jq '.hooks' > ./nix/modules/github-webhook-ips.json
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          title: Update github ip whitelist
+          labels: merge-queue
