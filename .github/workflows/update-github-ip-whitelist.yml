@@ -8,7 +8,7 @@ permissions:
   pull-requests: write
   contents: write
 jobs:
-  update-submodules:
+  update-github-ip-whitelist:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
