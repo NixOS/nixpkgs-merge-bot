@@ -68,7 +68,7 @@ in
             --github-app-private-key $CREDENTIALS_DIRECTORY/github-app-private-key \
             --repo-path ${cfg.repo-path}
         '';
-        StateDir = "nixpkgs-merge-bot";
+        StateDirectory = "nixpkgs-merge-bot";
       };
     };
     systemd.sockets.nixpkgs-merge-bot = {
