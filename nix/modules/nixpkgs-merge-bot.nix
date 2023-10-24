@@ -46,10 +46,7 @@ in
       description = "path to the repository";
     };
   };
-  # TODO: from Mic92 to lassulus
-  # https://github.com/Mic92/buildbot-nix/blob/main/nix/checks/lib.nix
-  # https://github.com/Mic92/buildbot-nix/blob/main/nix/checks/flake-module.nix
-  # https://github.com/Mic92/buildbot-nix/blob/main/nix/checks/master.nix
+
   config = lib.mkIf cfg.enable {
     systemd.services.nixpkgs-merge-bot = {
       description = "nixpkgs-merge-bot";
