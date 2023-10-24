@@ -13,17 +13,13 @@ def start_server(settings: Settings) -> None:
         fds = range(3, 3 + int(nfds))
         for fd in fds:
             sock = socket.fromfd(fd, socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(0)
 
-            try:
-                while True:
+            while True:
+                try:
                     GithubWebHook(*sock.accept(), settings)
-            except BlockingIOError:
-                # no more connections
-                pass
-            except OSError:
-                # connection closed
-                pass
+                except OSError:
+                    # connection closed
+                    pass
     else:
         serversocket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
         try:
