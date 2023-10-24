@@ -25,7 +25,7 @@
         system.stateVersion = "23.11";
 
         security.acme.acceptTerms = true;
-        security.acme.email = "nix@lassul.us";
+        security.acme.defaults.email = "nix@lassul.us";
       })
       ./modules/nixpkgs-merge-bot.nix
       ./modules/sops.nix
