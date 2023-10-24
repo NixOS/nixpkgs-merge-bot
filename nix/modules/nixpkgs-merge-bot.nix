@@ -75,14 +75,27 @@ in
         "/run/nixpkgs-merge-bot.sock"
       ];
     };
-    services.nginx.virtualHosts.${cfg.hostname} = {
-      enableACME = true;
-      forceSSL = true;
-      locations."/" = {
-        proxyPass = "http://unix:/run/nixpkgs-merge-bot.sock";
-        proxyWebsockets = true;
-        recommendedProxySettings = true;
+    services.nginx.virtualHosts.${cfg.hostname} =
+      let
+        ips = builtins.fromJSON (builtins.readFile ./github-webhook-ips.json);
+      in
+      {
+        enableACME = true;
+        forceSSL = true;
+        locations."/" = {
+          proxyPass = "http://unix:/run/nixpkgs-merge-bot.sock";
+          proxyWebsockets = true;
+          recommendedProxySettings = true;
+          extraConfig = ''
+            ${lib.concatMapStringsSep "\n" (ip: "allow ${ip};") ips}
+            allow 127.0.0.1;
+            allow ::1;
+            # we also allow the IP of the server itself, so that can just use curl
+            allow 37.27.11.42;
+            allow 2a01:4f9:c012:7615::1;
+            deny all;
+          '';
+        };
       };
-    };
   };
 }
