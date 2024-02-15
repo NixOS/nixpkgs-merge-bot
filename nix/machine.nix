@@ -15,7 +15,7 @@
         services.nixpkgs-merge-bot = {
           enable = true;
           hostname = "nixpkgs-merge-bot.nixos.org";
-          github-app-login = "nixos";
+          github-app-login = "NixOS";
           github-app-id = 409421;
           webhook-secret-file = config.sops.secrets.webhook_secret.path;
           github-app-private-key-file = config.sops.secrets.github_app_key.path;
