@@ -101,7 +101,7 @@ def test_post_merge(webhook_client: WebhookClient, mocker: MockerFixture) -> Non
     headers = {
         "Content-Type": "application/json",
         "X-GitHub-Event": "issue_comment",
-        "X-Hub-Signature": "sha1=e95fecb50e56ce292855e84d129449d39bb1cdd7",
+        "X-Hub-Signature": "sha1=46879ac80229482672e9d7acde7b37834a49b8c3",
         "X-Hub-Signature-256": "sha256=53e04dda8e5d322028f7111eb9b92dc0056c8bc0bcb084edec7c9b87d594a4bb",
     }
     client.request("POST", "/", body=create_event, headers=headers)
@@ -152,7 +152,7 @@ def test_post_merge_maintainer(
     headers = {
         "Content-Type": "application/json",
         "X-GitHub-Event": "issue_comment",
-        "X-Hub-Signature": "sha1=e95fecb50e56ce292855e84d129449d39bb1cdd7",
+        "X-Hub-Signature": "sha1=46879ac80229482672e9d7acde7b37834a49b8c3",
         "X-Hub-Signature-256": "sha256=53e04dda8e5d322028f7111eb9b92dc0056c8bc0bcb084edec7c9b87d594a4bb",
     }
     client.request("POST", "/", body=create_event, headers=headers)
