@@ -72,7 +72,7 @@ def merge_check(
 ) -> MergeResponse:
     pr = client.pull_request(repo_owner, repo_name, pr_number).json()
     files_response = client.pull_request_files(repo_owner, repo_name, pr_number)
-    decline_reasons = []
+    decline_reasons = ["bot is running in dry-run mode"]
     permitted = True
     body = files_response.json()
     sha = pr["head"]["sha"]
@@ -121,12 +121,5 @@ def merge_check(
                 logging.info(message)
     # merging is disabled for now, until we have sufficient consensus
     permitted = False
-    if decline_reasons == []:
-        decline_reasons.append(
-            "bot is running in dry-run mode, merge declined but would have merged if merging is enabled"
-        )
-        logging.info(
-            "merge is permitted, no decline reasons, but we are running in dry-run mode"
-        )
 
     return MergeResponse(permitted, decline_reasons, sha)
