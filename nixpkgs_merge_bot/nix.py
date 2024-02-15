@@ -1,4 +1,5 @@
 import json
+import logging
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -21,6 +22,7 @@ class Maintainer:
 
 
 def nix_eval(folder: Path, attr: str) -> bytes:
+    logging.info(f"Running nix-instantiate with attr: {attr} and folder: {folder}")
     proc = subprocess.run(
         [
             "nix-instantiate",
@@ -46,6 +48,7 @@ def get_package_maintainers(settings: Settings, path: Path) -> list[Maintainer]:
     # TODO maybe we want to check the merge target remote here?
     proc = nix_eval(settings.repo_path, f"{package_name}.meta.maintainers")
     maintainers = json.loads(proc.decode("utf-8"))
+    logging.debug(f"Found {maintainers} for {path}")
     return [
         Maintainer(maintainer["githubId"], maintainer["github"])
         for maintainer in maintainers
@@ -73,45 +76,57 @@ def merge_check(
     permitted = True
     body = files_response.json()
     sha = pr["head"]["sha"]
+    logging.info(f"Checking mergeability of {pr_number} with sha {sha}")
 
     if pr["user"]["login"] not in settings.restricted_authors:
         permitted = False
-        decline_reasons.append(
-            "pr author is not in restricted authors list: "
+        message = (
+            "pr author is not in restricted authors list, in the list are: "
             + ", ".join(settings.restricted_authors)
         )
+        decline_reasons.append(message)
+        logging.info(message)
         return MergeResponse(permitted, decline_reasons, sha)
 
     if pr["state"] != "open":
         permitted = False
-        decline_reasons.append("pr is not open")
+        message = f"pr is not open, state is {pr['state']}"
+        decline_reasons.append(message)
+        logging.info(message)
         return MergeResponse(permitted, decline_reasons, sha)
 
     if pr["base"]["ref"] not in ("staging", "staging-next", "master"):
         permitted = False
-        decline_reasons.append(
-            "pr is not targeted to any of the allowed branches: staging, staging-next, master"
-        )
+        message = "pr is not targeted to any of the allowed branches: staging, staging-next, master"
+        decline_reasons.append(message)
+        logging.info(message)
         return MergeResponse(permitted, decline_reasons, sha)
 
     for file in body:
         filename = file["filename"]
         if not filename.startswith("pkgs/by-name/"):
             permitted = False
-            decline_reasons.append(f"{filename} is not in pkgs/by-name/")
+            message = f"{filename} is not in pkgs/by-name/"
+            decline_reasons.append(message)
+            logging.info(message)
         else:
             maintainers = get_package_maintainers(settings, Path(filename))
             if not is_maintainer(github_id, maintainers):
                 permitted = False
-                decline_reasons.append(
+                message = (
                     f"github id: {github_id} is not in maintainers, valid maintainers are: "
                     + ", ".join(m.name for m in maintainers)
                 )
+                decline_reasons.append(message)
+                logging.info(message)
     # merging is disabled for now, until we have sufficient consensus
     permitted = False
     if decline_reasons == []:
         decline_reasons.append(
             "bot is running in dry-run mode, merge declined but would have merged if merging is enabled"
+        )
+        logging.info(
+            "merge is permitted, no decline reasons, but we are running in dry-run mode"
         )
 
     return MergeResponse(permitted, decline_reasons, sha)

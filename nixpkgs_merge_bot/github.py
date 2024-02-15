@@ -4,6 +4,7 @@ import argparse
 import base64
 import http.client
 import json
+import logging
 import subprocess
 import time
 import urllib.parse
@@ -152,11 +153,17 @@ def request_access_token(app_login: str, app_id: int, app_private_key: Path) -> 
     response = client.app_installations()
 
     installation_id = None
+    logging.info(
+        f"Searching for the NixOS Installation of our APP, searching for {app_login} and {app_id}"
+    )
     for item in response.json():
         if item["account"]["login"] == app_login and item["app_id"] == app_id:
             installation_id = item["id"]
             break
     if not installation_id:
+        logging.error(
+            f"Installation not found for {app_login} and {app_id}, this is case sensitive!"
+        )
         raise ValueError("Access token URL not found")
 
     resp = client.create_installation_access_token(installation_id)

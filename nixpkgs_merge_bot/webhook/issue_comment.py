@@ -49,19 +49,25 @@ def issue_comment(body: dict[str, Any], settings: Settings) -> HttpResponse:
 
     # ignore our own comments and comments from other bots (security)
     if issue.is_bot:
+        logging.debug("ignoring event as it is from a bot")
         return issue_response("ignore-bot")
     if not body["issue"].get("pull_request"):
+        logging.debug("ignoring event as it is not a pull request")
         return issue_response("ignore-not-pr")
 
     if issue.action not in ("created", "edited"):
+        logging.debug("ignoring event as actions is not created or edited")
         return issue_response("ignore-action")
 
     stripped = re.sub("(<!--.*?-->)", "", issue.text, flags=re.DOTALL)
     bot_name = re.escape(settings.bot_name)
     if not re.match(rf"@{bot_name}\s+merge", stripped):
+        logging.debug("no command was found in comment")
         return issue_response("no-command")
 
+    logging.debug("getting github client")
     client = get_github_client(settings)
+    logging.info("Checking meragability")
     check = merge_check(
         client,
         issue.repo_owner,
@@ -70,6 +76,7 @@ def issue_comment(body: dict[str, Any], settings: Settings) -> HttpResponse:
         issue.user_id,
         settings,
     )
+    logging.info("Creating issue reaction")
     client.create_issue_reaction(
         issue.repo_owner,
         issue.repo_name,
@@ -81,6 +88,8 @@ def issue_comment(body: dict[str, Any], settings: Settings) -> HttpResponse:
         msg = f"@{issue.user_login} merge not permitted: \n"
         for reason in check.decline_reasons:
             msg += f"{reason}\n"
+
+        logging.info(msg)
         client.create_issue_comment(
             issue.repo_owner,
             issue.repo_name,
@@ -90,9 +99,11 @@ def issue_comment(body: dict[str, Any], settings: Settings) -> HttpResponse:
         return issue_response("not-permitted")
 
     try:
+        logging.info("Trying to merge pull request")
         client.merge_pull_request(
             issue.repo_owner, issue.repo_name, issue.issue_number, check.sha
         )
+        logging.info("Merge completed")
     except GithubClientError as e:
         logger.exception("merge failed")
         msg = "\n".join(
