@@ -12,7 +12,7 @@ def parse_args() -> Settings:
         "--webhook-secret", type=str, required=True, help="github webhook secret path"
     )
     parser.add_argument(
-        "--bot-name", type=str, default="nixpkgs-merge-bot", help="bot name"
+        "--bot-name", type=str, default="NixOS/nixpkgs-merge-bot", help="bot name"
     )
     parser.add_argument(
         "--restricted-authors",
