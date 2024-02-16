@@ -5,6 +5,7 @@ from http.server import BaseHTTPRequestHandler
 
 from ..settings import Settings
 from . import http_header
+from .check_suite import check_suite
 from .errors import HttpError
 from .issue_comment import issue_comment
 from .secret import WebhookSecret
@@ -46,6 +47,8 @@ class GithubWebHook(BaseHTTPRequestHandler):
         match event_type:
             case "issue_comment":
                 handler = issue_comment
+            case "check_suite":
+                handler = check_suite
             case _:
                 logging.error(f"event_type '{event_type}' not registered")
                 return self.send_error(
