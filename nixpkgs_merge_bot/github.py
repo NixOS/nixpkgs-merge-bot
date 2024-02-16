@@ -175,7 +175,7 @@ CACHED_CLIENT = None
 
 def get_github_client(settings: Settings) -> GithubClient:
     global CACHED_CLIENT
-    if CACHED_CLIENT and CACHED_CLIENT.token_age + 300 < time.time():
+    if CACHED_CLIENT and CACHED_CLIENT.token_age + 300 > time.time():
         return CACHED_CLIENT
     token = request_access_token(
         settings.github_app_login,
