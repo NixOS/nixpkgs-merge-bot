@@ -72,8 +72,15 @@ def merge_check(
 ) -> MergeResponse:
     pr = client.pull_request(repo_owner, repo_name, pr_number).json()
     files_response = client.pull_request_files(repo_owner, repo_name, pr_number)
+
+    # merging is disabled for now, until we have sufficient consensus
     decline_reasons = ["bot is running in dry-run mode"]
-    permitted = True
+    permitted = False
+
+    # To arm the bot, delete the lines above and comment out the following ones
+    # decline_reasons = []
+    # permitted = True
+
     body = files_response.json()
     sha = pr["head"]["sha"]
     logging.info(f"Checking mergeability of {pr_number} with sha {sha}")
@@ -86,21 +93,18 @@ def merge_check(
         )
         decline_reasons.append(message)
         logging.info(message)
-        return MergeResponse(permitted, decline_reasons, sha)
 
     if pr["state"] != "open":
         permitted = False
         message = f"pr is not open, state is {pr['state']}"
         decline_reasons.append(message)
         logging.info(message)
-        return MergeResponse(permitted, decline_reasons, sha)
 
     if pr["base"]["ref"] not in ("staging", "staging-next", "master"):
         permitted = False
         message = "pr is not targeted to any of the allowed branches: staging, staging-next, master"
         decline_reasons.append(message)
         logging.info(message)
-        return MergeResponse(permitted, decline_reasons, sha)
 
     for file in body:
         filename = file["filename"]
@@ -119,7 +123,5 @@ def merge_check(
                 )
                 decline_reasons.append(message)
                 logging.info(message)
-    # merging is disabled for now, until we have sufficient consensus
-    permitted = False
 
     return MergeResponse(permitted, decline_reasons, sha)
