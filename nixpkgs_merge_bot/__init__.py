@@ -1,7 +1,12 @@
 import argparse
+import logging
+import os
 from pathlib import Path
 
 from .server import Settings, start_server
+
+LOGLEVEL = os.environ.get("LOGLEVEL", "WARNING").upper()
+logging.basicConfig(level=LOGLEVEL)
 
 
 def parse_args() -> Settings:
