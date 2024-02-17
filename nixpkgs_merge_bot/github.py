@@ -113,6 +113,21 @@ class GithubClient:
     def pull_request(self, owner: str, repo: str, pr_number: int) -> HttpResponse:
         return self.get(f"/repos/{owner}/{repo}/pulls/{pr_number}")
 
+    def get_pull_requests_for_commit(
+        self, owner: str, repo: str, ref: str
+    ) -> HttpResponse:
+        return self.get(f"/repos/{owner}/{repo}/commits/{ref}/pulls")
+
+    def get_check_suite_for_commit(
+        self, owner: str, repo: str, ref: str
+    ) -> HttpResponse:
+        return self.get(f"/repos/{owner}/{repo}/commits/{ref}/check-suites")
+
+    def get_comments_for_issue(
+        self, owner: str, repo: str, issue_number: int
+    ) -> HttpResponse:
+        return self.get(f"/repos/{owner}/{repo}/issues/{issue_number}/comments")
+
     def pull_request_files(self, owner: str, repo: str, pr_number: int) -> HttpResponse:
         return self.get(f"/repos/{owner}/{repo}/pulls/{pr_number}/files")
 
