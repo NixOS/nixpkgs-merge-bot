@@ -50,6 +50,9 @@ in
   config = lib.mkIf cfg.enable {
     systemd.services.nixpkgs-merge-bot = {
       description = "nixpkgs-merge-bot";
+      path = [
+        pkgs.nix
+      ];
       serviceConfig = {
         LoadCredential = [
           "webhook-secret:${cfg.webhook-secret-file}"
