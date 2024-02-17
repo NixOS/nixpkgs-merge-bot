@@ -83,11 +83,17 @@ def default_mocks(mocker: MockerFixture) -> dict[str, Any]:
         ),
         "nixpkgs_merge_bot.git.checkout_newest_master": "",
         "nixpkgs_merge_bot.nix.nix_eval": (TEST_DATA / "nix-eval.json").read_bytes(),
+        "nixpkgs_merge_bot.github.GithubClient.get_check_suites_for_commit": FakeHttpResponse(
+            TEST_DATA / "get_check_suites_for_commit.json"
+        ),
+        "nixpkgs_merge_bot.github.GithubClient.get_statuses_for_commit": FakeHttpResponse(
+            TEST_DATA / "get_statuses_for_commit.json"
+        ),
         "nixpkgs_merge_bot.github.GithubClient.create_issue_comment": FakeHttpResponse(
-            TEST_DATA / "create_issue_comment.json"
+            TEST_DATA / "issue_comment.merge.json"
         ),  # unused
         "nixpkgs_merge_bot.github.GithubClient.create_issue_reaction": FakeHttpResponse(
-            TEST_DATA / "create_issue_reaction.json"
+            TEST_DATA / "issue_comment.merge.json"
         ),  # unused
     }
 
