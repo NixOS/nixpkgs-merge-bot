@@ -124,10 +124,13 @@ class GithubClient:
     ) -> HttpResponse:
         return self.get(f"/repos/{owner}/{repo}/commits/{ref}/pulls")
 
-    def get_check_suite_for_commit(
+    def get_check_suites_for_commit(
         self, owner: str, repo: str, ref: str
     ) -> HttpResponse:
         return self.get(f"/repos/{owner}/{repo}/commits/{ref}/check-suites")
+
+    def get_statuses_for_commit(self, owner: str, repo: str, ref: str) -> HttpResponse:
+        return self.get(f"/repos/{owner}/{repo}/commits/{ref}/status")
 
     def get_comments_for_issue(
         self, owner: str, repo: str, issue_number: int

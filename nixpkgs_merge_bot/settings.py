@@ -14,3 +14,4 @@ class Settings:
     host: str = "[::]"
     repo: str = "https://github.com/nixos/nixpkgs"
     repo_path: Path = Path("nixpkgs")
+    database_path: str = "/tmp/"

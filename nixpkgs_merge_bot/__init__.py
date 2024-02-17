@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+import sqlite3
 from pathlib import Path
 
 from .custom_logger import setup_logging
@@ -51,6 +52,12 @@ def parse_args() -> Settings:
         default="nixpkgs",
         help="Path where the nixpkg repo is stored. Default to nixpkgs",
     )
+    parser.add_argument(
+        "--database-folder",
+        type=str,
+        default="/tmp",
+        help="Path where the nixpkgs-merge-bot database will be stored. Default to /tmp",
+    )
     parser.add_argument("--debug", action="store_true", help="enable debug logging")
     args = parser.parse_args()
     return Settings(
@@ -62,12 +69,20 @@ def parse_args() -> Settings:
         github_app_id=args.github_app_id,
         github_app_private_key=args.github_app_private_key,
         restricted_authors=args.restricted_authors.split(" "),
+        database_path=args.database_folder,
         repo_path=args.repo_path,
     )
 
 
 def main() -> None:
     settings = parse_args()
+    con = sqlite3.connect(f"{settings.database_path}/nixpkgs_merge_bot.db")
+    cur = con.cursor()
+    cur.execute(
+        "CREATE TABLE IF NOT EXISTS prs_to_merge(repo_owner,repo_name,user_github_id,issue_number,sha)"
+    )
+    con.close()
+
     start_server(settings)
 
 
