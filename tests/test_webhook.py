@@ -89,6 +89,9 @@ def default_mocks(mocker: MockerFixture) -> dict[str, Any]:
         "nixpkgs_merge_bot.github.GithubClient.create_issue_reaction": FakeHttpResponse(
             TEST_DATA / "create_issue_reaction.json"
         ),  # unused
+        "nixpkgs_merge_bot.github.GithubClient.get_check_suite_for_commit": FakeHttpResponse(
+            TEST_DATA / "check_suite.json"
+        ),
     }
 
 

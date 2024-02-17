@@ -119,6 +119,16 @@ def merge_check(
                 )
                 decline_reasons.append(message)
                 logging.info(message)
+
+    check_suite = client.get_check_suite_for_commit(repo_owner, repo_name, sha).json()
+    for check_suite in check_suite["check_suites"]:
+        print(check_suite)
+        if check_suite["conclusion"] != "success":
+            permitted = False
+            message = f"check suite conclusion is not success, it is {check_suite['conclusion']}"
+            decline_reasons.append(message)
+            logging.info(message)
+
     # merging is disabled for now, until we have sufficient consensus
     permitted = False
 

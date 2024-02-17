@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+import sqlite3
 from pathlib import Path
 
 from .server import Settings, start_server
@@ -63,6 +64,10 @@ def parse_args() -> Settings:
 
 def main() -> None:
     settings = parse_args()
+    con = sqlite3.connect("nixpkgs-merge-bot.db")
+    cur = con.cursor()
+    cur.execute("CREATE TABLE IF NOT EXISTS prs_to_merge(pr_number, sha, author)")
+    con.close()
     start_server(settings)
 
 
