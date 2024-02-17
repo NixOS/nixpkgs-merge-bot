@@ -6,7 +6,7 @@ from typing import Any
 from ..settings import Settings
 from .http_response import HttpResponse
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 @dataclass

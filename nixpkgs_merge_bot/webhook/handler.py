@@ -10,6 +10,8 @@ from .errors import HttpError
 from .issue_comment import issue_comment
 from .secret import WebhookSecret
 
+log = logging.getLogger(__name__)
+
 
 class GithubWebHook(BaseHTTPRequestHandler):
     def __init__(
@@ -40,17 +42,19 @@ class GithubWebHook(BaseHTTPRequestHandler):
     def process_event(self, body: bytes) -> None:
         event_type = self.headers.get("X-Github-Event")
         if not event_type:
-            logging.error("X-Github-Event header missing")
+            log.error("X-Github-Event header missing")
             return self.send_error(400, explain="X-Github-Event header missing")
         payload = json.loads(body)
 
         match event_type:
             case "issue_comment":
                 handler = issue_comment
+            case "pull_request_review_comment":
+                handler = issue_comment
             case "check_suite":
                 handler = check_suite
             case _:
-                logging.error(f"event_type '{event_type}' not registered")
+                log.error(f"event_type '{event_type}' not registered")
                 return self.send_error(
                     404, explain=f"event_type '{event_type}' not registered"
                 )
@@ -58,7 +62,7 @@ class GithubWebHook(BaseHTTPRequestHandler):
         try:
             payload = json.loads(body)
         except json.JSONDecodeError as e:
-            logging.error(f"invalid json: {e}")
+            log.error(f"invalid json: {e}")
             return self.send_error(400, explain=f"invalid json: {e}")
 
         resp = handler(payload, self.settings)
@@ -85,11 +89,12 @@ class GithubWebHook(BaseHTTPRequestHandler):
 
         try:
             if not self.secret.validate_signature(body, self.headers):
+                log.debug("Invalid Signature")
                 return self.send_error(403, explain="invalid signature")
 
             self.process_event(body)
         except HttpError as e:
             self.send_error(e.code, e.message)
         except Exception as e:
-            logging.exception("internal error")
+            log.exception("internal error")
             return self.send_error(500, explain=f"internal error: {e}")

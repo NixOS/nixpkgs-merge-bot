@@ -3,10 +3,15 @@ import logging
 import os
 from pathlib import Path
 
+from .custom_logger import setup_logging
 from .server import Settings, start_server
 
 LOGLEVEL = os.environ.get("LOGLEVEL", "WARNING").upper()
-logging.basicConfig(level=LOGLEVEL)
+
+
+setup_logging(LOGLEVEL)
+log = logging.getLogger(__name__)
+log.info(f"Log level set to {LOGLEVEL}")
 
 
 def parse_args() -> Settings:

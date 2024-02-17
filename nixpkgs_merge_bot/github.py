@@ -5,6 +5,7 @@ import base64
 import http.client
 import json
 import logging
+import os
 import subprocess
 import time
 import urllib.parse
@@ -13,6 +14,11 @@ from pathlib import Path
 from typing import Any
 
 from .settings import Settings
+
+log = logging.getLogger(__name__)
+STAGING = os.environ.get("STAGING", "FALSE")
+if STAGING:
+    log.info("Staging is set")
 
 
 def base64url(data: bytes) -> str:
@@ -133,25 +139,40 @@ class GithubClient:
 
     def create_issue_comment(
         self, owner: str, repo: str, issue_number: int, body: str
-    ) -> HttpResponse:
-        return self.post(
-            f"/repos/{owner}/{repo}/issues/{issue_number}/comments", {"body": body}
-        )
+    ) -> HttpResponse | None:
+        global STAGING
+        if STAGING:
+            log.debug("Staging running")
+            return None
+        else:
+            return self.post(
+                f"/repos/{owner}/{repo}/issues/{issue_number}/comments", {"body": body}
+            )
 
     def create_issue_reaction(
         self, owner: str, repo: str, issue_number: int, comment_id: int, reaction: str
-    ) -> HttpResponse:
-        return self.post(
-            f"/repos/{owner}/{repo}/issues/comments/{comment_id}/reactions",
-            {"content": reaction},
-        )
+    ) -> HttpResponse | None:
+        global STAGING
+        if STAGING:
+            log.debug("Staging, not creating reaction")
+            return None
+        else:
+            return self.post(
+                f"/repos/{owner}/{repo}/issues/comments/{comment_id}/reactions",
+                {"content": reaction},
+            )
 
     def merge_pull_request(
         self, owner: str, repo: str, pr_number: int, sha: str
-    ) -> HttpResponse:
-        return self.put(
-            f"/repos/{owner}/{repo}/pulls/{pr_number}/merge", data={"sha": sha}
-        )
+    ) -> HttpResponse | None:
+        global STAGING
+        if STAGING:
+            log.debug("Staging, not merging")
+            return None
+        else:
+            return self.put(
+                f"/repos/{owner}/{repo}/pulls/{pr_number}/merge", data={"sha": sha}
+            )
 
     def create_installation_access_token(self, installation_id: int) -> HttpResponse:
         return self.post(f"/app/installations/{installation_id}/access_tokens", data={})
@@ -168,7 +189,7 @@ def request_access_token(app_login: str, app_id: int, app_private_key: Path) -> 
     response = client.app_installations()
 
     installation_id = None
-    logging.info(
+    log.info(
         f"Searching for the NixOS Installation of our APP, searching for {app_login} and {app_id}"
     )
     for item in response.json():
@@ -176,7 +197,7 @@ def request_access_token(app_login: str, app_id: int, app_private_key: Path) -> 
             installation_id = item["id"]
             break
     if not installation_id:
-        logging.error(
+        log.error(
             f"Installation not found for {app_login} and {app_id}, this is case sensitive!"
         )
         raise ValueError("Access token URL not found")
