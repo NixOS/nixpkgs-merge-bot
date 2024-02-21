@@ -13,7 +13,7 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-from .settings import Settings
+from ..settings import Settings
 
 log = logging.getLogger(__name__)
 STAGING = os.environ.get("STAGING", "FALSE")
@@ -139,6 +139,9 @@ class GithubClient:
 
     def pull_request_files(self, owner: str, repo: str, pr_number: int) -> HttpResponse:
         return self.get(f"/repos/{owner}/{repo}/pulls/{pr_number}/files")
+
+    def get_issue(self, owner: str, repo: str, issue_number: int) -> HttpResponse:
+        return self.get(f"/repos/{owner}/{repo}/issues/{issue_number}")
 
     def create_issue_comment(
         self, owner: str, repo: str, issue_number: int, body: str

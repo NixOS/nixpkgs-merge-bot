@@ -66,33 +66,35 @@ class FakeHttpResponse:
 
 def default_mocks(mocker: MockerFixture) -> dict[str, Any]:
     return {
-        "nixpkgs_merge_bot.github.GithubClient.app_installations": FakeHttpResponse(
+        "nixpkgs_merge_bot.github.GitHubClient.GithubClient.app_installations": FakeHttpResponse(
             TEST_DATA / "app_installations.json"
         ),
-        "nixpkgs_merge_bot.github.GithubClient.create_installation_access_token": FakeHttpResponse(
+        "nixpkgs_merge_bot.github.GitHubClient.GithubClient.create_installation_access_token": FakeHttpResponse(
             TEST_DATA / "installation_access_token.json"
         ),
-        "nixpkgs_merge_bot.github.GithubClient.pull_request": FakeHttpResponse(
+        "nixpkgs_merge_bot.github.GitHubClient.GithubClient.pull_request": FakeHttpResponse(
             TEST_DATA / "pull_request.json"
         ),
-        "nixpkgs_merge_bot.github.GithubClient.merge_pull_request": FakeHttpResponse(
+        "nixpkgs_merge_bot.github.GitHubClient.GithubClient.merge_pull_request": FakeHttpResponse(
             TEST_DATA / "merge_pull_request.json"
         ),
-        "nixpkgs_merge_bot.github.GithubClient.pull_request_files": FakeHttpResponse(
+        "nixpkgs_merge_bot.github.GitHubClient.GithubClient.pull_request_files": FakeHttpResponse(
             TEST_DATA / "pull_request_files.json"
         ),
         "nixpkgs_merge_bot.git.checkout_newest_master": "",
-        "nixpkgs_merge_bot.nix.nix_eval": (TEST_DATA / "nix-eval.json").read_bytes(),
-        "nixpkgs_merge_bot.github.GithubClient.get_check_suites_for_commit": FakeHttpResponse(
+        "nixpkgs_merge_bot.nix.nix_utils.nix_eval": (
+            TEST_DATA / "nix-eval.json"
+        ).read_bytes(),
+        "nixpkgs_merge_bot.github.GitHubClient.GithubClient.get_check_suites_for_commit": FakeHttpResponse(
             TEST_DATA / "get_check_suites_for_commit.json"
         ),
-        "nixpkgs_merge_bot.github.GithubClient.get_statuses_for_commit": FakeHttpResponse(
+        "nixpkgs_merge_bot.github.GitHubClient.GithubClient.get_statuses_for_commit": FakeHttpResponse(
             TEST_DATA / "get_statuses_for_commit.json"
         ),
-        "nixpkgs_merge_bot.github.GithubClient.create_issue_comment": FakeHttpResponse(
+        "nixpkgs_merge_bot.github.GitHubClient.GithubClient.create_issue_comment": FakeHttpResponse(
             TEST_DATA / "issue_comment.merge.json"
         ),  # unused
-        "nixpkgs_merge_bot.github.GithubClient.create_issue_reaction": FakeHttpResponse(
+        "nixpkgs_merge_bot.github.GitHubClient.GithubClient.create_issue_reaction": FakeHttpResponse(
             TEST_DATA / "issue_comment.merge.json"
         ),  # unused
     }
@@ -124,22 +126,22 @@ def test_post_merge(webhook_client: WebhookClient, mocker: MockerFixture) -> Non
     "mock_overrides",
     [
         {
-            "nixpkgs_merge_bot.nix.nix_eval": (
+            "nixpkgs_merge_bot.nix.nix_utils.nix_eval": (
                 TEST_DATA / "nix-eval-no-maintainer.json"
             ).read_bytes()
         },
         {
-            "nixpkgs_merge_bot.nix.nix_eval": (
+            "nixpkgs_merge_bot.nix.nix_utils.nix_eval": (
                 TEST_DATA / "nix-eval-wrong-maintainer.json"
             ).read_bytes()
         },
         {
-            "nixpkgs_merge_bot.nix.nix_eval": (
+            "nixpkgs_merge_bot.nix.nix_utils.nix_eval": (
                 TEST_DATA / "nix-eval-wrong-maintainer.json"
             ).read_bytes()
         },
         {
-            "nixpkgs_merge_bot.github.GithubClient.pull_request_files": FakeHttpResponse(
+            "nixpkgs_merge_bot.github.GitHubClient.GithubClient.pull_request_files": FakeHttpResponse(
                 TEST_DATA / "pull_request_files.not-by-name.json"
             )
         },

@@ -1,7 +1,4 @@
-import json
 import logging
-import re
-from typing import Any
 
 from ..database import Database
 from ..github.GitHubClient import GithubClient, GithubClientError, get_github_client
@@ -9,13 +6,10 @@ from ..github.Issue import Issue
 from ..github.PullRequest import PullRequest
 from ..merging_startegies.maintainer_update import MaintainerUpdate
 from ..settings import Settings
-from .http_response import HttpResponse
+from ..webhook.http_response import HttpResponse
+from ..webhook.issue_comment import issue_response
 
 log = logging.getLogger(__name__)
-
-
-def issue_response(action: str) -> HttpResponse:
-    return HttpResponse(200, {}, json.dumps({"action": action}).encode("utf-8"))
 
 
 def process_pull_request_status(
@@ -45,8 +39,10 @@ def process_pull_request_status(
         check_suite_success = True
         check_suite_pending = False
         check_suite_failed = False
-        log.debug("All the statues where fine we now move to check the check_suites")
-        log.debug("Getting check suites for commit")
+        log.debug(
+            f"{pull_request.number} All the statues where fine we now move to check the check_suites"
+        )
+        log.debug(f"{pull_request.number}Getting check suites for commit")
         check_suites_for_commit = client.get_check_suites_for_commit(
             pull_request.repo_owner, pull_request.repo_name, pull_request.head_sha
         )
@@ -215,29 +211,3 @@ def merge_command(issue: Issue, settings: Settings) -> HttpResponse:
             msg,
         )
         return issue_response("not-permitted")
-
-
-def issue_comment(body: dict[str, Any], settings: Settings) -> HttpResponse:
-    issue = Issue.from_json(body)
-    log.debug(issue)
-    # ignore our own comments and comments from other bots (security)
-    if issue.is_bot:
-        log.debug(f"{issue.issue_number}: ignoring event as it is from a bot")
-        return issue_response("ignore-bot")
-    if not body["issue"].get("pull_request"):
-        log.debug(f"{issue.issue_number}: ignoring event as it is not a pull request")
-        return issue_response("ignore-not-pr")
-
-    if issue.action not in ("created", "edited"):
-        log.debug(
-            f"{issue.issue_number}: ignoring event as actions is not created or edited"
-        )
-        return issue_response("ignore-action")
-
-    stripped = re.sub("(<!--.*?-->)", "", issue.text, flags=re.DOTALL)
-    bot_name = re.escape(settings.bot_name)
-    if re.match(rf"@{bot_name}\s+merge", stripped):
-        return merge_command(issue, settings)
-    else:
-        log.debug(f"{issue.issue_number}: no command was found in comment")
-        return issue_response("no-command")
