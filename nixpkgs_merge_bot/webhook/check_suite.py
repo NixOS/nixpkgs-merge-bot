@@ -1,12 +1,14 @@
 import json
 import logging
-import sqlite3
 from dataclasses import dataclass
 from typing import Any
 
-from ..github import GithubClientError, get_github_client
+from ..database import Database
+from ..github.GitHubClient import get_github_client
+from ..github.Issue import Issue
 from ..settings import Settings
 from .http_response import HttpResponse
+from .issue_comment import merge_command
 
 log = logging.getLogger(__name__)
 
@@ -20,6 +22,8 @@ class CheckSuite:
     created_at: str
     head_branch: str
     head_sha: str
+    repo_name: str
+    repo_owner: str
     id: int
     latest_check_runs_count: int
     node_id: str
@@ -45,6 +49,8 @@ class CheckSuite:
             status=body["check_suite"]["status"],
             updated_at=body["check_suite"]["updated_at"],
             url=body["check_suite"]["url"],
+            repo_name=body["repository"]["name"],
+            repo_owner=body["repository"]["owner"]["login"],
         )
 
 
@@ -55,40 +61,16 @@ def check_suite_response(action: str) -> HttpResponse:
 def check_suite(body: dict[str, Any], settings: Settings) -> HttpResponse:
     check_suite = CheckSuite.from_json(body)
     if check_suite.conclusion == "completed":
-        con = sqlite3.connect(f"{settings.database_path}/nixpkgs_merge_bot.db")
-        cur = con.cursor()
-        cur.execute(
-            """SELECT repo_owner, repo_name, github_id, pr_number, sha
-                       FROM prs_to_merge
-                       WHERE sha=?""",
-            (check_suite.head_sha),
-        )
-        repo_owner, repo_name, github_user_id, issue_number, sha = cur.fetchone()
-        con.close()
-        if sha:
+        # TODO check if all other check_suites are completed and then continue
+        db = Database(settings)
+        values = db.get(check_suite.head_sha)
+        for value in values:
+            issue_number = int(value)
             client = get_github_client(settings)
-            try:
-                log.info("Trying to merge pull request after check suite completion")
-                client.merge_pull_request(repo_owner, repo_name, issue_number, sha)
-                log.info("Merge completed")
-            except GithubClientError as e:
-                log.exception("merge failed")
-                msg = "\n".join(
-                    [
-                        f"@{github_user_id} merge failed:",
-                        "```",
-                        f"{e.code} {e.reason}: {e.body}",
-                        "```",
-                    ]
-                )
-
-                client.create_issue_comment(
-                    repo_owner,
-                    repo_name,
-                    issue_number,
-                    msg,
-                )
-                return check_suite_response("merge-failed")
-
-            return check_suite_response("merged")
+            issue = Issue.from_json(
+                client.get_issue(
+                    check_suite.repo_owner, check_suite.repo_name, issue_number
+                ).json()
+            )
+            return merge_command(issue, settings)
     return check_suite_response("success")
