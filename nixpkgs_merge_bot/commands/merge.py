@@ -115,10 +115,6 @@ def merge_command(issue: Issue, settings: Settings) -> HttpResponse:
         )
         check_suite_result = process_pull_request_status(client, pull_request)
         decline_reasons.extend(check_suite_result.messages)
-        if check_suite_result.success:
-            check_suite_result.success = False
-            decline_reasons.append("Dry run bot")
-            log.info(f"{issue.issue_number }: dry running aborting here")
         if check_suite_result.pending:
             db = Database(settings)
             db.add(pull_request.head_sha, str(issue.issue_number))
