@@ -1,4 +1,5 @@
 import logging
+from dataclasses import dataclass
 
 from ..database import Database
 from ..github.GitHubClient import GithubClient, GithubClientError, get_github_client
@@ -7,18 +8,24 @@ from ..github.PullRequest import PullRequest
 from ..merging_startegies.maintainer_update import MaintainerUpdate
 from ..settings import Settings
 from ..webhook.http_response import HttpResponse
-from ..webhook.issue_comment import issue_response
+from ..webhook.utils.issue_response import issue_response
 
 log = logging.getLogger(__name__)
 
 
+@dataclass
+class CheckSuiteResult:
+    success: bool
+    pending: bool
+    failed: bool
+    messages: list[str]
+
+
 def process_pull_request_status(
     client: GithubClient, pull_request: PullRequest
-) -> tuple[bool, bool, bool, list[str]]:
-    statuses_success = True
-    statuses_pending = False
-    statuses_failed = False
+) -> CheckSuiteResult:
     messages = []
+    check_suite_result = CheckSuiteResult(True, False, False, [])
 
     # As ofBorg takes a while to add a check_suite to the pull request we have to check the statues first if this is still pending
 
@@ -26,19 +33,15 @@ def process_pull_request_status(
         pull_request.repo_owner, pull_request.repo_name, pull_request.head_sha
     ).json()
     if statuses["state"] != "success":
-        statuses_success = False
+        check_suite_result.success = False
         log.info(f"Status {statuses['state']} is not success")
     if statuses["state"] == "pending":
-        statuses_success = False
-        statuses_pending = True
+        check_suite_result.success = False
+        check_suite_result.pending = True
         message = "Some status is still pending"
         log.info(message)
         messages.append(message)
-        return statuses_success, statuses_pending, statuses_failed, messages
-    if statuses_success:
-        check_suite_success = True
-        check_suite_pending = False
-        check_suite_failed = False
+    if check_suite_result.success:
         log.debug(
             f"{pull_request.number} All the statues where fine we now move to check the check_suites"
         )
@@ -56,8 +59,9 @@ def process_pull_request_status(
                 message = f"Check suite {check_suite['app']['name']} is not completed, we will wait for it to finish and if it succeeds we will merge this."
                 messages.append(message)
                 log.info(message)
-                check_suite_pending = False
-                check_suite_success = False
+                check_suite_result.success = False
+                if check_suite["status"] == "in_progress":
+                    check_suite_result.pending = True
             else:
                 # if the state is not success or skipped we will decline the merge. The state can be
                 # Can be one of: success, failure, neutral, cancelled, timed_out, action_required, stale, null, skipped, startup_failure
@@ -65,13 +69,12 @@ def process_pull_request_status(
                     check_suite["conclusion"] == "success"
                     or check_suite["conclusion"] == "skipped"
                 ):
-                    check_suite_success = False
-                    check_suite_failed = True
+                    check_suite_result.success = False
+                    check_suite_result.failed = True
                     message = f"Check suite {check_suite['app']['name']} is {check_suite['conclusion']}"
                     messages.append(message)
                     log.info(message)
-        return check_suite_success, check_suite_pending, check_suite_failed, messages
-    return statuses_success, statuses_pending, statuses_failed, messages
+    return check_suite_result
 
 
 def merge_command(issue: Issue, settings: Settings) -> HttpResponse:
@@ -110,15 +113,13 @@ def merge_command(issue: Issue, settings: Settings) -> HttpResponse:
             issue.comment_id,
             "rocket",
         )
-        success, pending, failed, messages = process_pull_request_status(
-            client, pull_request
-        )
-        decline_reasons.extend(messages)
-        if success:
-            success = False
+        check_suite_result = process_pull_request_status(client, pull_request)
+        decline_reasons.extend(check_suite_result.messages)
+        if check_suite_result.success:
+            check_suite_result.success = False
             decline_reasons.append("Dry run bot")
             log.info(f"{issue.issue_number }: dry running aborting here")
-        if pending:
+        if check_suite_result.pending:
             db = Database(settings)
             db.add(pull_request.head_sha, str(issue.issue_number))
             msg = "One or more checks are still pending, we will wait for them to finish and if it succeeds we will merge this."
@@ -130,7 +131,7 @@ def merge_command(issue: Issue, settings: Settings) -> HttpResponse:
                 msg,
             )
             return issue_response("merge-postponed")
-        elif success:
+        elif check_suite_result.success:
             try:
                 log.info(f"{issue.issue_number }: Trying to merge pull request")
                 client.merge_pull_request(
@@ -167,7 +168,7 @@ def merge_command(issue: Issue, settings: Settings) -> HttpResponse:
                     msg,
                 )
                 return issue_response("merge-failed")
-        elif failed:
+        elif check_suite_result.failed:
             log.info(f"{issue.issue_number }: OfBorg failed, we let the user know")
             msg = f"@{issue.user_login} merge not permitted: \n"
             for reason in decline_reasons:
