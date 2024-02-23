@@ -19,9 +19,9 @@ class MaintainerUpdate(MergingStrategyTemplate):
         allowed_users = ["r-ryantm"]
         if pull_request.user_login not in allowed_users:
             result = False
-            message = f"{pull_request.number}: pr author is not in restricted authors list, in the list are: {','.join(allowed_users)}"
+            message = f"pr author is not in restricted authors list, in the list are: {','.join(allowed_users)}"
             decline_reasons.append(message)
-            log.info(message)
+            log.info(f"{pull_request.number}: {message}")
         else:
             files_response = self.github_client.pull_request_files(
                 pull_request.repo_owner,
@@ -35,10 +35,10 @@ class MaintainerUpdate(MergingStrategyTemplate):
                 if not is_maintainer(pull_request.user_id, maintainers):
                     result = False
                     message = (
-                        f"{pull_request.number}: github id: {pull_request.user_id} is not in maintainers, valid maintainers are: "
+                        f"github id: {pull_request.user_id} is not in maintainers, valid maintainers are: "
                         + ", ".join(m.name for m in maintainers)
                     )
                     decline_reasons.append(message)
-                    log.info(message)
+                    log.info(f"{pull_request.number}: {message}")
 
         return result, decline_reasons
