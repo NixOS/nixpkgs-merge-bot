@@ -16,7 +16,7 @@ from typing import Any
 from ..settings import Settings
 
 log = logging.getLogger(__name__)
-STAGING = os.environ.get("STAGING", "FALSE")
+STAGING = os.environ.get("STAGING", None)
 if STAGING:
     log.info("Staging is set")
 
