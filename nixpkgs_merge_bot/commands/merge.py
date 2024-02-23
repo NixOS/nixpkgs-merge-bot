@@ -5,7 +5,7 @@ from ..database import Database
 from ..github.GitHubClient import GithubClient, GithubClientError, get_github_client
 from ..github.Issue import Issue
 from ..github.PullRequest import PullRequest
-from ..merging_startegies.maintainer_update import MaintainerUpdate
+from ..merging_strategies.maintainer_update import MaintainerUpdate
 from ..settings import Settings
 from ..webhook.http_response import HttpResponse
 from ..webhook.utils.issue_response import issue_response
