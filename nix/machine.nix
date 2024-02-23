@@ -22,6 +22,10 @@
           restricted-authors = [ "r-ryantm" ];
         };
 
+        systemd.services.nixpkgs-merge-bot.environment = {
+          LOGLEVEL = "DEBUG";
+        };
+
         system.stateVersion = "23.11";
 
         security.acme.acceptTerms = true;
