@@ -29,25 +29,23 @@ class MergingStrategyTemplate:
 
         if pull_request.state != "open":
             result = False
-            message = (
-                f"{pull_request.number}: pr is not open, state is {pull_request.state}"
-            )
+            message = f"pr is not open, state is {pull_request.state}"
             decline_reasons.append(message)
-            log.info(message)
+            log.info(f"{pull_request.number}: {message}")
 
         if pull_request.ref not in ("staging", "staging-next", "master"):
             result = False
-            message = f"{pull_request.number}: pr is not targeted to any of the allowed branches: staging, staging-next, master"
+            message = "pr is not targeted to any of the allowed branches: staging, staging-next, master"
             decline_reasons.append(message)
-            log.info(message)
+            log.info(f"{pull_request.number}: {message}")
 
         for file in body:
             filename = file["filename"]
             if not filename.startswith("pkgs/by-name/"):
                 result = False
-                message = f"{pull_request.number}: {filename} is not in pkgs/by-name/"
+                message = f"{filename} is not in pkgs/by-name/"
                 decline_reasons.append(message)
-                log.info(message)
+                log.info(f"{pull_request.number}: {message}")
         return result, decline_reasons
 
     def run(self, pull_request: PullRequest) -> tuple[bool, list[str]]:
