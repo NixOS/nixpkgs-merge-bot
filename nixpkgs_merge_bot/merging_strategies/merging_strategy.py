@@ -14,7 +14,7 @@ class MergingStrategyTemplate:
         self.settings: Settings = settings
 
     def run_technical_limits_check(
-        self, pull_request: PullRequest
+        self, pull_request: PullRequest, commenter_id: int
     ) -> tuple[bool, list[str]]:
         result = True
         decline_reasons = []
@@ -48,7 +48,9 @@ class MergingStrategyTemplate:
                 log.info(f"{pull_request.number}: {message}")
         return result, decline_reasons
 
-    def run(self, pull_request: PullRequest) -> tuple[bool, list[str]]:
+    def run(
+        self, pull_request: PullRequest, commenter_id: int
+    ) -> tuple[bool, list[str]]:
         # Analyze the pull request here
         # This is just a placeholder implementation
         raise NotImplementedError

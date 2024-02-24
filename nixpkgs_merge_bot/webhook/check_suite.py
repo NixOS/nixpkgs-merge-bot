@@ -5,7 +5,7 @@ from typing import Any
 
 from ..database import Database
 from ..github.GitHubClient import get_github_client
-from ..github.Issue import Issue
+from ..github.Issue import IssueComment
 from ..settings import Settings
 from .http_response import HttpResponse
 from .issue_comment import merge_command
@@ -67,7 +67,7 @@ def check_suite(body: dict[str, Any], settings: Settings) -> HttpResponse:
         for value in values:
             issue_number = int(value)
             client = get_github_client(settings)
-            issue = Issue.from_json(
+            issue = IssueComment.from_json(
                 client.get_issue(
                     check_suite.repo_owner, check_suite.repo_name, issue_number
                 ).json()
