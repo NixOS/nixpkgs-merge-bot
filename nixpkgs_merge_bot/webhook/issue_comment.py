@@ -3,7 +3,7 @@ import re
 from typing import Any
 
 from ..commands.merge import merge_command
-from ..github.Issue import Issue
+from ..github.Issue import IssueComment
 from ..settings import Settings
 from .http_response import HttpResponse
 from .utils.issue_response import issue_response
@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 
 
 def issue_comment(body: dict[str, Any], settings: Settings) -> HttpResponse:
-    issue = Issue.from_json(body)
+    issue = IssueComment.from_json(body)
     log.debug(issue)
     # ignore our own comments and comments from other bots (security)
     if issue.is_bot:

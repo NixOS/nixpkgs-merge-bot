@@ -3,9 +3,9 @@ from typing import Any
 
 
 @dataclass
-class Issue:
-    user_id: int
-    user_login: str
+class IssueComment:
+    commenter_id: int
+    commenter_login: str
     text: str
     action: str
     comment_id: int
@@ -17,11 +17,11 @@ class Issue:
     state: str
 
     @staticmethod
-    def from_json(body: dict[str, Any]) -> "Issue":
-        return Issue(
+    def from_json(body: dict[str, Any]) -> "IssueComment":
+        return IssueComment(
             action=body["action"],
-            user_id=body["comment"]["user"]["id"],
-            user_login=body["comment"]["user"]["login"],
+            commenter_id=body["comment"]["user"]["id"],
+            commenter_login=body["comment"]["user"]["login"],
             text=body["comment"]["body"],
             comment_id=body["comment"]["id"],
             repo_owner=body["repository"]["owner"]["login"],
@@ -33,4 +33,4 @@ class Issue:
         )
 
     def __str__(self) -> str:
-        return f"{self.issue_number}: Pull Request:  {self.title} by {self.user_login}"
+        return f"{self.issue_number}: Pull Request:  {self.title} by {self.commenter_login}"

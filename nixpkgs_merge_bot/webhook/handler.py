@@ -8,6 +8,7 @@ from . import http_header
 from .check_suite import check_suite
 from .errors import HttpError
 from .issue_comment import issue_comment
+from .review_comment import review_comment
 from .secret import WebhookSecret
 
 log = logging.getLogger(__name__)
@@ -53,6 +54,8 @@ class GithubWebHook(BaseHTTPRequestHandler):
                 handler = issue_comment
             case "check_suite":
                 handler = check_suite
+            case "pull_request_review_comment":
+                handler = review_comment
             case _:
                 log.error(f"event_type '{event_type}' not registered")
                 return self.send_error(

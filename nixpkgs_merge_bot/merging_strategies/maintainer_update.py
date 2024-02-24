@@ -9,10 +9,14 @@ log = logging.getLogger(__name__)
 
 
 class MaintainerUpdate(MergingStrategyTemplate):
-    def run(self, pull_request: PullRequest) -> tuple[bool, list[str]]:
+    def run(
+        self, pull_request: PullRequest, commenter_id: int
+    ) -> tuple[bool, list[str]]:
         # Analyze the pull request here
         # This is just a placeholder implementation
-        result, decline_reasons = self.run_technical_limits_check(pull_request)
+        result, decline_reasons = self.run_technical_limits_check(
+            pull_request, commenter_id
+        )
         if not result:
             return result, decline_reasons
 
@@ -32,10 +36,10 @@ class MaintainerUpdate(MergingStrategyTemplate):
             for file in body:
                 filename = file["filename"]
                 maintainers = get_package_maintainers(self.settings, Path(filename))
-                if not is_maintainer(pull_request.user_id, maintainers):
+                if not is_maintainer(commenter_id, maintainers):
                     result = False
                     message = (
-                        f"github id: {pull_request.user_id} is not in maintainers, valid maintainers are: "
+                        f"github id: {commenter_id} is not in maintainers, valid maintainers are: "
                         + ", ".join(m.name for m in maintainers)
                     )
                     decline_reasons.append(message)
