@@ -7,8 +7,7 @@ from ..settings import Settings
 from . import http_header
 from .check_suite import check_suite
 from .errors import HttpError
-from .issue_comment import issue_comment
-from .review_comment import review_comment
+from .issue_comment import issue_comment, review_comment
 from .secret import WebhookSecret
 
 log = logging.getLogger(__name__)

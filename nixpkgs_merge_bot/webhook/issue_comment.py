@@ -11,8 +11,9 @@ from .utils.issue_response import issue_response
 log = logging.getLogger(__name__)
 
 
-def issue_comment(body: dict[str, Any], settings: Settings) -> HttpResponse:
-    issue = IssueComment.from_json(body)
+def process_comment(
+    issue: IssueComment, body: dict[str, Any], settings: Settings
+) -> HttpResponse:
     log.debug(issue)
     # ignore our own comments and comments from other bots (security)
     if issue.is_bot:
@@ -35,3 +36,15 @@ def issue_comment(body: dict[str, Any], settings: Settings) -> HttpResponse:
     else:
         log.debug(f"{issue.issue_number}: no command was found in comment")
         return issue_response("no-command")
+
+
+def issue_comment(body: dict[str, Any], settings: Settings) -> HttpResponse:
+    log.debug("issue_comment")
+    issue = IssueComment.from_issue_comment_json(body)
+    return process_comment(issue, body, settings)
+
+
+def review_comment(body: dict[str, Any], settings: Settings) -> HttpResponse:
+    log.debug("review_comment")
+    issue = IssueComment.from_review_comment_json(body)
+    return process_comment(issue, body, settings)

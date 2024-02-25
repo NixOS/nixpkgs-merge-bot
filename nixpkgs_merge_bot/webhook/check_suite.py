@@ -67,7 +67,7 @@ def check_suite(body: dict[str, Any], settings: Settings) -> HttpResponse:
         for value in values:
             issue_number = int(value)
             client = get_github_client(settings)
-            issue = IssueComment.from_json(
+            issue = IssueComment.from_issue_comment_json(
                 client.get_issue(
                     check_suite.repo_owner, check_suite.repo_name, issue_number
                 ).json()
