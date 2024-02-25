@@ -108,7 +108,11 @@ class GithubClient:
         return self._request(path, "GET")
 
     def post(self, path: str, data: dict[str, str]) -> HttpResponse:
-        return self._request(path, "POST", data)
+        log.debug(f"POST {path} {data}")
+        post_result = self._request(path, "POST", data)
+        log.debug(post_result)
+
+        return post_result
 
     def put(self, path: str, data: dict[str, str]) -> HttpResponse:
         return self._request(path, "PUT")
