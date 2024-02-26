@@ -65,6 +65,13 @@ class GithubClientError(Exception):
     url: str
     body: str
 
+    def __init__(self, code: int, reason: str, url: str, resp_body: str) -> None:
+        super().__init__(f"{code} {reason} {url}")
+        self.code = code
+        self.reason = reason
+        self.url = url
+        self.body = resp_body
+
 
 class GithubClient:
     def __init__(self, api_token: str | None) -> None:
@@ -108,7 +115,11 @@ class GithubClient:
         return self._request(path, "GET")
 
     def post(self, path: str, data: dict[str, str]) -> HttpResponse:
-        return self._request(path, "POST", data)
+        log.debug(f"POST {path} {data}")
+        post_result = self._request(path, "POST", data)
+        log.debug(post_result)
+
+        return post_result
 
     def put(self, path: str, data: dict[str, str]) -> HttpResponse:
         return self._request(path, "PUT")

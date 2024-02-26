@@ -24,7 +24,6 @@ class CheckSuiteResult:
 def process_pull_request_status(
     client: GithubClient, pull_request: PullRequest
 ) -> CheckSuiteResult:
-    messages = []
     check_suite_result = CheckSuiteResult(True, False, False, [])
 
     # As ofBorg takes a while to add a check_suite to the pull request we have to check the statues first if this is still pending
@@ -34,18 +33,18 @@ def process_pull_request_status(
     ).json()
     if statuses["state"] != "success":
         check_suite_result.success = False
-        log.info(f"Status {statuses['state']} is not success")
+        log.info(f"{pull_request.number}: Status {statuses['state']} is not success")
     if statuses["state"] == "pending":
         check_suite_result.success = False
         check_suite_result.pending = True
         message = "Some status is still pending"
-        log.info(message)
-        messages.append(message)
+        log.info(f"{pull_request.number}: {message}")
+        check_suite_result.messages.append(message)
     if check_suite_result.success:
         log.debug(
             f"{pull_request.number} All the statues where fine we now move to check the check_suites"
         )
-        log.debug(f"{pull_request.number}Getting check suites for commit")
+        log.debug(f"{pull_request.number}: Getting check suites for commit")
         check_suites_for_commit = client.get_check_suites_for_commit(
             pull_request.repo_owner, pull_request.repo_name, pull_request.head_sha
         )
@@ -57,10 +56,16 @@ def process_pull_request_status(
             # The summary status for all check runs that are part of the check suite. Can be requested, in_progress, or completed.
             if check_suite["status"] != "completed":
                 message = f"Check suite {check_suite['app']['name']} is not completed, we will wait for it to finish and if it succeeds we will merge this."
-                messages.append(message)
-                log.info(message)
+                check_suite_result.messages.append(message)
+                log.info(f"{pull_request.number}: {message}")
                 check_suite_result.success = False
-                if check_suite["status"] == "in_progress":
+                if (
+                    check_suite["status"] == "in_progress"
+                    or check_suite["status"] == "queued"
+                ):
+                    log.debug(
+                        f"{pull_request.number}: Check suite is in progress or queued"
+                    )
                     check_suite_result.pending = True
             else:
                 # if the state is not success or skipped we will decline the merge. The state can be
@@ -72,8 +77,8 @@ def process_pull_request_status(
                     check_suite_result.success = False
                     check_suite_result.failed = True
                     message = f"Check suite {check_suite['app']['name']} is {check_suite['conclusion']}"
-                    messages.append(message)
-                    log.info(message)
+                    check_suite_result.messages.append(message)
+                    log.info(f"{pull_request.number}: message")
     return check_suite_result
 
 
@@ -167,14 +172,14 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
                     issue_comment.repo_owner,
                     issue_comment.repo_name,
                     issue_comment.issue_number,
-                    msg,
+                    "\n".join(decline_reasons),
                 )
                 return issue_response("merge-failed")
         elif check_suite_result.failed:
             log.info(
                 f"{issue_comment.issue_number }: OfBorg failed, we let the user know"
             )
-            msg = f"@{issue_comment.commenter_login} merge not permitted: \n"
+            msg = f"@{issue_comment.commenter_login} merge not possible, check suite failed: \n"
             for reason in decline_reasons:
                 msg += f"{reason}\n"
 

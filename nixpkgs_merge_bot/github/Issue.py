@@ -15,9 +15,10 @@ class IssueComment:
     is_bot: bool
     title: str
     state: str
+    is_pull_request: bool = True
 
     @staticmethod
-    def from_json(body: dict[str, Any]) -> "IssueComment":
+    def from_issue_comment_json(body: dict[str, Any]) -> "IssueComment":
         return IssueComment(
             action=body["action"],
             commenter_id=body["comment"]["user"]["id"],
@@ -30,6 +31,23 @@ class IssueComment:
             is_bot=body["comment"]["user"]["type"] == "Bot",
             title=body["issue"]["title"],
             state=body["issue"]["state"],
+            is_pull_request=body["issue"]["pull_request"] is not None,
+        )
+
+    @staticmethod
+    def from_review_comment_json(body: dict[str, Any]) -> "IssueComment":
+        return IssueComment(
+            action=body["action"],
+            commenter_id=body["comment"]["user"]["id"],
+            commenter_login=body["comment"]["user"]["login"],
+            text=body["comment"]["body"],
+            comment_id=body["comment"]["id"],
+            repo_owner=body["repository"]["owner"]["login"],
+            repo_name=body["repository"]["name"],
+            issue_number=body["pull_request"]["number"],
+            is_bot=body["comment"]["user"]["type"] == "Bot",
+            title=body["pull_request"]["title"],
+            state=body["pull_request"]["state"],
         )
 
     def __str__(self) -> str:
