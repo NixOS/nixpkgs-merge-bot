@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 
 
 @dataclass
-class CheckSuiteResult:
+class CheckRunResult:
     success: bool
     pending: bool
     failed: bool
@@ -23,8 +23,8 @@ class CheckSuiteResult:
 
 def process_pull_request_status(
     client: GithubClient, pull_request: PullRequest
-) -> CheckSuiteResult:
-    check_suite_result = CheckSuiteResult(True, False, False, [])
+) -> CheckRunResult:
+    check_run_result = CheckRunResult(True, False, False, [])
 
     # As ofBorg takes a while to add a check_suite to the pull request we have to check the statues first if this is still pending
 
@@ -32,54 +32,59 @@ def process_pull_request_status(
         pull_request.repo_owner, pull_request.repo_name, pull_request.head_sha
     ).json()
     if statuses["state"] != "success":
-        check_suite_result.success = False
+        check_run_result.success = False
         log.info(f"{pull_request.number}: Status {statuses['state']} is not success")
     if statuses["state"] == "pending":
-        check_suite_result.success = False
-        check_suite_result.pending = True
+        check_run_result.success = False
+        check_run_result.pending = True
         message = "Some status is still pending"
         log.info(f"{pull_request.number}: {message}")
-        check_suite_result.messages.append(message)
-    if check_suite_result.success:
+        check_run_result.messages.append(message)
+    if check_run_result.success:
         log.debug(
             f"{pull_request.number} All the statues where fine we now move to check the check_suites"
         )
         log.debug(f"{pull_request.number}: Getting check suites for commit")
-        check_suites_for_commit = client.get_check_suites_for_commit(
+        check_runs_for_commit = client.get_check_runs_for_commit(
             pull_request.repo_owner, pull_request.repo_name, pull_request.head_sha
         )
-        for check_suite in check_suites_for_commit.json()["check_suites"]:
+        for check_run in check_runs_for_commit.json()["check_runs"]:
             log.debug(
-                f"{check_suite['app']['name']} conclusion: {check_suite['conclusion']} and status: {check_suite['status']}"
+                f"{check_run['app']['name']} conclusion: {check_run['conclusion']} and status: {check_run['status']}"
             )
-            # First check if all check suites are completed if not we will add them to the database and wait for the webhook for finished check suites
-            # The summary status for all check runs that are part of the check suite. Can be requested, in_progress, or completed.
-            if check_suite["status"] != "completed":
-                message = f"Check suite {check_suite['app']['name']} is not completed, we will wait for it to finish and if it succeeds we will merge this."
-                check_suite_result.messages.append(message)
+            # Ignoring darwin checks for ofborg as these get stucked quite often
+            if (
+                "darwin" in check_run["name"]
+                and check_run["app"]["name"] == "ofborg"
+                and check_run["status"] == "queued"
+            ):
+                continue
+            if check_run["status"] != "completed":
+                message = f"Check run {check_run['app']['name']} is not completed, we will wait for it to finish and if it succeeds we will merge this."
+                check_run_result.messages.append(message)
                 log.info(f"{pull_request.number}: {message}")
-                check_suite_result.success = False
+                check_run_result.success = False
                 if (
-                    check_suite["status"] == "in_progress"
-                    or check_suite["status"] == "queued"
+                    check_run["status"] == "in_progress"
+                    or check_run["status"] == "queued"
                 ):
                     log.debug(
-                        f"{pull_request.number}: Check suite is in progress or queued"
+                        f"{pull_request.number}: Check run is in progress or queued"
                     )
-                    check_suite_result.pending = True
+                    check_run_result.pending = True
             else:
                 # if the state is not success or skipped we will decline the merge. The state can be
                 # Can be one of: success, failure, neutral, cancelled, timed_out, action_required, stale, null, skipped, startup_failure
                 if not (
-                    check_suite["conclusion"] == "success"
-                    or check_suite["conclusion"] == "skipped"
+                    check_run["conclusion"] == "success"
+                    or check_run["conclusion"] == "skipped"
                 ):
-                    check_suite_result.success = False
-                    check_suite_result.failed = True
-                    message = f"Check suite {check_suite['app']['name']} is {check_suite['conclusion']}"
-                    check_suite_result.messages.append(message)
+                    check_run_result.success = False
+                    check_run_result.failed = True
+                    message = f"Check suite {check_run['app']['name']} is {check_run['conclusion']}"
+                    check_run_result.messages.append(message)
                     log.info(f"{pull_request.number}: message")
-    return check_suite_result
+    return check_run_result
 
 
 def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpResponse:
@@ -190,7 +195,7 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
                 issue_comment.issue_number,
                 msg,
             )
-            return issue_response("not-permitted")
+            return issue_response("not-permitted-check-run-failed")
         else:
             msg = f"@{issue_comment.commenter_login} merge not permitted: \n"
             for reason in decline_reasons:
