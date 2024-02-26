@@ -65,6 +65,13 @@ class GithubClientError(Exception):
     url: str
     body: str
 
+    def __init__(self, code: int, reason: str, url: str, resp_body: str) -> None:
+        super().__init__(f"{code} {reason} {url}")
+        self.code = code
+        self.reason = reason
+        self.url = url
+        self.body = resp_body
+
 
 class GithubClient:
     def __init__(self, api_token: str | None) -> None:
