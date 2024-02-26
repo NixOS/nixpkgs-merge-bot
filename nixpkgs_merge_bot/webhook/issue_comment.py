@@ -19,7 +19,7 @@ def process_comment(
     if issue.is_bot:
         log.debug(f"{issue.issue_number}: ignoring event as it is from a bot")
         return issue_response("ignore-bot")
-    if not body["issue"].get("pull_request"):
+    if not issue.is_pull_request:
         log.debug(f"{issue.issue_number}: ignoring event as it is not a pull request")
         return issue_response("ignore-not-pr")
 
