@@ -15,6 +15,7 @@ class IssueComment:
     is_bot: bool
     title: str
     state: str
+    is_pull_request: bool = True
 
     @staticmethod
     def from_issue_comment_json(body: dict[str, Any]) -> "IssueComment":
@@ -30,6 +31,7 @@ class IssueComment:
             is_bot=body["comment"]["user"]["type"] == "Bot",
             title=body["issue"]["title"],
             state=body["issue"]["state"],
+            is_pull_request=body["issue"]["pull_request"] is not None,
         )
 
     @staticmethod
