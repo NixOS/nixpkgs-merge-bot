@@ -56,7 +56,9 @@ def process_pull_request_status(
             if (
                 "darwin" in check_run["name"]
                 and check_run["app"]["name"] == "ofborg"
-                and check_run["status"] == "queued"
+                and (
+                    check_run["status"] == "queued" or check_run["status"] == "neutral"
+                )
             ):
                 continue
             if check_run["status"] != "completed":
@@ -78,6 +80,7 @@ def process_pull_request_status(
                 if not (
                     check_run["conclusion"] == "success"
                     or check_run["conclusion"] == "skipped"
+                    or check_run["conclusion"] == "neutral"
                 ):
                     check_run_result.success = False
                     check_run_result.failed = True
