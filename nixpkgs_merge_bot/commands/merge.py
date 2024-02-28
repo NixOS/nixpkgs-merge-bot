@@ -133,7 +133,10 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
         decline_reasons.extend(check_suite_result.messages)
         if check_suite_result.pending:
             db = Database(settings)
-            db.add(pull_request.head_sha, str(issue_comment.issue_number))
+            db.add(
+                pull_request.head_sha,
+                f"{str(issue_comment.issue_number)};{issue_comment.commenter_id};{issue_comment.commenter_login}",
+            )
             msg = "One or more checks are still pending, we will wait for them to finish and if it succeeds we will merge this."
             log.info(f"{issue_comment.issue_number}: {msg}")
             client.create_issue_comment(

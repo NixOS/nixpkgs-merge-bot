@@ -31,6 +31,7 @@ class CheckSuite:
     status: str
     updated_at: str
     url: str
+    app_name: str
 
     @staticmethod
     def from_json(body: dict[str, Any]) -> "CheckSuite":
@@ -51,6 +52,7 @@ class CheckSuite:
             url=body["check_suite"]["url"],
             repo_name=body["repository"]["name"],
             repo_owner=body["repository"]["owner"]["login"],
+            app_name=body["check_suite"]["app"]["name"],
         )
 
 
@@ -60,17 +62,29 @@ def check_suite_response(action: str) -> HttpResponse:
 
 def check_suite(body: dict[str, Any], settings: Settings) -> HttpResponse:
     check_suite = CheckSuite.from_json(body)
+    log.debug(
+        f"Check Suite {check_suite.app_name} with commit id {check_suite.head_sha} is in state: {check_suite.status}"
+    )
     if check_suite.conclusion == "completed":
-        # TODO check if all other check_suites are completed and then continue
         db = Database(settings)
+        log.debug(
+            f"Check Suite {check_suite.app_name} with commit id {check_suite.head_sha} is in state: {check_suite.status}"
+        )
         values = db.get(check_suite.head_sha)
         for value in values:
-            issue_number = int(value)
+            issue_number_str, commenter_id_str, commenter_login = value.split(";")
+            issue_number = int(issue_number_str)
+            log.debug(f"{issue_number}: Found pr for commit it {check_suite.head_sha}")
+            commenter_id = int(commenter_id_str)
             client = get_github_client(settings)
             issue = IssueComment.from_issue_comment_json(
                 client.get_issue(
                     check_suite.repo_owner, check_suite.repo_name, issue_number
                 ).json()
             )
+            issue.comment_id = commenter_id
+            issue.commenter_login = commenter_login
+            log.debug(f"{issue_number} Rerunning merge command for this")
+
             return merge_command(issue, settings)
     return check_suite_response("success")
