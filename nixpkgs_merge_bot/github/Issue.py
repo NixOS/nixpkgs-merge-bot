@@ -19,6 +19,14 @@ class IssueComment:
 
     @staticmethod
     def from_issue_comment_json(body: dict[str, Any]) -> "IssueComment":
+        try:
+            if body["issue"]["pull_request"] is not None:
+                is_pull_request = True
+            else:
+                is_pull_request = False
+        except KeyError:
+            is_pull_request = False
+
         return IssueComment(
             action=body["action"],
             commenter_id=body["comment"]["user"]["id"],
@@ -31,7 +39,7 @@ class IssueComment:
             is_bot=body["comment"]["user"]["type"] == "Bot",
             title=body["issue"]["title"],
             state=body["issue"]["state"],
-            is_pull_request=body["issue"]["pull_request"] is not None,
+            is_pull_request=is_pull_request,
         )
 
     @staticmethod
