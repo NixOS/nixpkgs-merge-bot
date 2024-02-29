@@ -30,6 +30,13 @@
 
         security.acme.acceptTerms = true;
         security.acme.defaults.email = "nix@lassul.us";
+
+        system.autoUpgrade = {
+          enable = true;
+          allowReboot = true;
+          flake = "github:nixos/nixpkgs-merge-bot#nixpkgs-merge-bot";
+          dates = "*:0/10:00";
+        };
       })
       ./modules/nixpkgs-merge-bot.nix
       ./modules/sops.nix
