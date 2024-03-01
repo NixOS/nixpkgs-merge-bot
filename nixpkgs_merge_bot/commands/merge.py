@@ -50,19 +50,16 @@ def process_pull_request_status(
         )
         for check_run in check_runs_for_commit.json()["check_runs"]:
             log.debug(
-                f"{check_run['app']['name']} conclusion: {check_run['conclusion']} and status: {check_run['status']}"
+                f"{pull_request.number}: {check_run['name']} conclusion: {check_run['conclusion']} and status: {check_run['status']}"
             )
             # Ignoring darwin checks for ofborg as these get stucked quite often
-            if (
-                "darwin" in check_run["name"]
-                and check_run["app"]["name"] == "ofborg"
-                and (
-                    check_run["status"] == "queued" or check_run["status"] == "neutral"
-                )
+            if "darwin" in check_run["name"] and (
+                check_run["status"] == "queued" or check_run["status"] == "neutral"
             ):
+                log.debug(f"{pull_request.number}: Ignoring darwin check")
                 continue
             if check_run["status"] != "completed":
-                message = f"Check run {check_run['app']['name']} is not completed, we will wait for it to finish and if it succeeds we will merge this."
+                message = f"Check run {check_run['name']} is not completed, we will wait for it to finish and if it succeeds we will merge this."
                 check_run_result.messages.append(message)
                 log.info(f"{pull_request.number}: {message}")
                 check_run_result.success = False
