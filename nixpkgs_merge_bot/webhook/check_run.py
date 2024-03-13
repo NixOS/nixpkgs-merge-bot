@@ -47,12 +47,12 @@ def check_run_response(action: str) -> HttpResponse:
 def check_run(body: dict[str, Any], settings: Settings) -> HttpResponse:
     check_run = CheckRun.from_json(body)
     log.debug(
-        f"Check Run {check_run.name} with commit id {check_run.head_sha} is in state: {check_run.status}"
+        f"Check Run {check_run.name} with commit id {check_run.head_sha} is in state: {check_run.status} and conclusion: {check_run.conclusion}"
     )
-    if check_run.conclusion == "completed":
+    if check_run.status == "completed":
         db = Database(settings)
         log.debug(
-            f"Check Run {check_run.name} with commit id {check_run.head_sha} is in state: {check_run.status}"
+            f"Check Run {check_run.name} with commit id {check_run.head_sha} completed"
         )
         values = db.get(check_run.head_sha)
         for value in values:

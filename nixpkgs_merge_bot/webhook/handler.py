@@ -5,7 +5,7 @@ from http.server import BaseHTTPRequestHandler
 
 from ..settings import Settings
 from . import http_header
-from .check_suite import check_run
+from .check_run import check_run
 from .errors import HttpError
 from .issue_comment import issue_comment, review_comment
 from .secret import WebhookSecret
