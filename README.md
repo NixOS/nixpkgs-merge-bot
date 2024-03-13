@@ -17,7 +17,7 @@ committers, this bot is a game-changer.
 To merge a PR, maintainers simply need to comment:
 
 ```
-@nixpkgs-merge-bot merge
+@NixOS/nixpkgs-merge-bot merge
 ```
 
 Upon invocation, the bot will verify if the conditions are suitable. If
