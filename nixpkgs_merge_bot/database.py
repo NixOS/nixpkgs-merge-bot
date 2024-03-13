@@ -25,7 +25,9 @@ class Database:
 
     def get(self, key: str) -> list[str]:
         path = self.datbase_store_path / key
-        values = []
+        values: list[str] = []
+        if not path.exists():
+            return values
         for child in path.iterdir():
             values.append(child.name)
         return values
