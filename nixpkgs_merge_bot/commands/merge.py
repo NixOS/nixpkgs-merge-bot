@@ -137,7 +137,7 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
                 pull_request.head_sha,
                 f"{str(issue_comment.issue_number)};{issue_comment.commenter_id};{issue_comment.commenter_login}",
             )
-            msg = "One or more checks are still pending, we will wait for them to finish and if it succeeds we will merge this."
+            msg = "One or more checks are still pending, please retry after they are done. darwin checks can be ignored."
             log.info(f"{issue_comment.issue_number}: {msg}")
             client.create_issue_comment(
                 issue_comment.repo_owner,
