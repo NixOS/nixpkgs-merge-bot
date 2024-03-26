@@ -1,9 +1,12 @@
 import hashlib
 import hmac
+import logging
 from email.message import Message
 from pathlib import Path
 
 from .errors import HttpError
+
+log = logging.getLogger(__name__)
 
 
 class WebhookSecret:
@@ -27,4 +30,9 @@ class WebhookSecret:
         )
 
         # See if they match
-        return hmac.compare_digest(local_signature.hexdigest(), github_signature)
+        result = hmac.compare_digest(local_signature.hexdigest(), github_signature)
+        if not result:
+            log.debug(f"Local signature: {local_signature.hexdigest()}")
+            log.debug(f"Github signature: {github_signature}")
+
+        return result
