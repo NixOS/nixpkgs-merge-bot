@@ -46,3 +46,9 @@ def review_comment(body: dict[str, Any], settings: Settings) -> HttpResponse:
     log.debug("review_comment")
     issue = IssueComment.from_review_comment_json(body)
     return process_comment(issue, settings)
+
+
+def review(body: dict[str, Any], settings: Settings) -> HttpResponse:
+    log.debug("review")
+    issue = IssueComment.from_review_json(body)
+    return process_comment(issue, settings)
