@@ -174,3 +174,54 @@ def test_post_merge_maintainer(
     response_body = json.loads(response.read().decode("utf-8"))
     assert response.status == 200, f"Response: {response.status}, {response_body}"
     assert response_body["action"] == "not-permitted"
+
+
+@pytest.mark.parametrize(
+    "mock_overrides",
+    [
+        {
+            "nixpkgs_merge_bot.nix.nix_utils.nix_eval": (
+                TEST_DATA / "nix-eval-no-maintainer.json"
+            ).read_bytes()
+        },
+        {
+            "nixpkgs_merge_bot.nix.nix_utils.nix_eval": (
+                TEST_DATA / "nix-eval-wrong-maintainer.json"
+            ).read_bytes()
+        },
+        {
+            "nixpkgs_merge_bot.nix.nix_utils.nix_eval": (
+                TEST_DATA / "nix-eval-wrong-maintainer.json"
+            ).read_bytes()
+        },
+        {
+            "nixpkgs_merge_bot.github.GitHubClient.GithubClient.pull_request_files": FakeHttpResponse(
+                TEST_DATA / "pull_request_files.not-by-name.json"
+            )
+        },
+    ],
+)
+def test_post_merge_maintainer_multiline(
+    webhook_client: WebhookClient, mocker: MockerFixture, mock_overrides: dict[str, Any]
+) -> None:
+    mocks = default_mocks(mocker)
+    mocks.update(mock_overrides)
+    for name, return_value in mocks.items():
+        mocker.patch(name, return_value=return_value)
+
+    client = webhook_client.http_connect()
+    create_event = (TEST_DATA / "issue_comment_multiline.merge.json").read_bytes()
+    headers = {
+        "Content-Type": "application/json",
+        "X-GitHub-Event": "issue_comment",
+        "X-Hub-Signature": "sha1=eff1fea4ebf0cc443d53a499e2466904da8c3062",
+        "X-Hub-Signature-256": "sha256=53e04dda8e5d322028f7111eb9b92dc0056c8bc0bcb084edec7c9b87d594a4bb",
+    }
+    client.request("POST", "/", body=create_event, headers=headers)
+
+    GithubWebHook(webhook_client.server_sock, webhook_client.addr, SETTINGS)
+
+    response = client.getresponse()
+    response_body = json.loads(response.read().decode("utf-8"))
+    assert response.status == 200, f"Response: {response.status}, {response_body}"
+    assert response_body["action"] == "not-permitted"

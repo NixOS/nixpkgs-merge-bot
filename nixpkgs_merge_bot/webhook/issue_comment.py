@@ -29,8 +29,9 @@ def process_comment(issue: IssueComment, settings: Settings) -> HttpResponse:
 
     stripped = re.sub("(<!--.*?-->)", "", issue.text, flags=re.DOTALL)
     bot_name = re.escape(settings.bot_name)
-    if re.match(rf"@{bot_name}\s+merge", stripped):
-        return merge_command(issue, settings)
+    for line in stripped.split("\n"):
+        if re.match(rf"^@{bot_name}\s+merge$", line.strip()):
+            return merge_command(issue, settings)
     else:
         log.debug(f"{issue.issue_number}: no command was found in comment")
         return issue_response("no-command")
