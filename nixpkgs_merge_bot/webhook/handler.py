@@ -7,7 +7,7 @@ from ..settings import Settings
 from . import http_header
 from .check_run import check_run
 from .errors import HttpError
-from .issue_comment import issue_comment, review_comment
+from .issue_comment import issue_comment, review, review_comment
 from .secret import WebhookSecret
 
 log = logging.getLogger(__name__)
@@ -55,6 +55,8 @@ class GithubWebHook(BaseHTTPRequestHandler):
                 handler = check_run
             case "pull_request_review_comment":
                 handler = review_comment
+            case "pull_request":
+                handler = review
             case _:
                 log.error(f"event_type '{event_type}' not registered")
                 return self.send_error(

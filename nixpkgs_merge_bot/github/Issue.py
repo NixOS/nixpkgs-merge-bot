@@ -58,5 +58,21 @@ class IssueComment:
             state=body["pull_request"]["state"],
         )
 
+    @staticmethod
+    def from_review_json(body: dict[str, Any]) -> "IssueComment":
+        return IssueComment(
+            action=body["action"],
+            commenter_id=body["review"]["user"]["id"],
+            commenter_login=body["review"]["user"]["login"],
+            text=body["review"]["body"],
+            comment_id=body["review"]["id"],
+            repo_owner=body["repository"]["owner"]["login"],
+            repo_name=body["repository"]["name"],
+            issue_number=body["pull_request"]["number"],
+            is_bot=body["review"]["user"]["type"] == "Bot",
+            title=body["pull_request"]["title"],
+            state=body["pull_request"]["state"],
+        )
+
     def __str__(self) -> str:
         return f"{self.issue_number}: Pull Request:  {self.title} by {self.commenter_login}"
