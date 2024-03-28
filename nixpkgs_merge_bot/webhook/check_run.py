@@ -56,19 +56,24 @@ def check_run(body: dict[str, Any], settings: Settings) -> HttpResponse:
         )
         values = db.get(check_run.head_sha)
         for value in values:
-            issue_number_str, commenter_id_str, commenter_login = value.split(";")
+            (
+                issue_number_str,
+                commenter_id_str,
+                commenter_login,
+                comment_id_str,
+            ) = value.split(";")
             issue_number = int(issue_number_str)
             log.debug(f"{issue_number}: Found pr for commit it {check_run.head_sha}")
             commenter_id = int(commenter_id_str)
+            comment_id = int(comment_id_str)
             client = get_github_client(settings)
-            issue = IssueComment.from_issue_comment_json(
-                client.get_issue(
-                    check_run.repo_owner, check_run.repo_name, issue_number
-                ).json()
-            )
-            issue.comment_id = commenter_id
-            issue.commenter_login = commenter_login
+            comment = client.get_comment(
+                check_run.repo_owner, check_run.repo_name, comment_id
+            ).json()
+            issue_comment = IssueComment.from_issue_comment_json(comment)
+            issue_comment.comment_id = commenter_id
+            issue_comment.commenter_login = commenter_login
             log.debug(f"{issue_number} Rerunning merge command for this")
 
-            return merge_command(issue, settings)
+            return merge_command(issue_comment, settings)
     return check_run_response("success")

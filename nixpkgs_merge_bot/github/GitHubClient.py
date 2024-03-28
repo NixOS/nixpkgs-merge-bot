@@ -153,6 +153,9 @@ class GithubClient:
     ) -> HttpResponse:
         return self.get(f"/repos/{owner}/{repo}/issues/{issue_number}/comments")
 
+    def get_comment(self, owner: str, repo: str, comment_id: int) -> HttpResponse:
+        return self.get(f"/repos/{owner}/{repo}/issues/comments/{comment_id}")
+
     def pull_request_files(self, owner: str, repo: str, pr_number: int) -> HttpResponse:
         return self.get(f"/repos/{owner}/{repo}/pulls/{pr_number}/files")
 

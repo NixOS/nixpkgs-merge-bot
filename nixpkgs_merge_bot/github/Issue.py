@@ -31,8 +31,16 @@ class IssueComment:
             is_pull_request = False
 
         try:
+            if body["action"] is not None:
+                action = body["action"]
+            else:
+                action = "created"
+        except KeyError:
+            action = "created"
+
+        try:
             return IssueComment(
-                action=body["action"],
+                action=action,
                 commenter_id=body["comment"]["user"]["id"],
                 commenter_login=body["comment"]["user"]["login"],
                 text=body["comment"]["body"],
