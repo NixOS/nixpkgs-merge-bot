@@ -135,7 +135,7 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
             db = Database(settings)
             db.add(
                 pull_request.head_sha,
-                f"{str(issue_comment.issue_number)};{issue_comment.commenter_id};{issue_comment.commenter_login}",
+                f"{str(issue_comment.issue_number)};{issue_comment.commenter_id};{issue_comment.commenter_login};{issue_comment.comment_id}",
             )
             msg = "One or more checks are still pending, please retry after they are done. darwin checks can be ignored."
             log.info(f"{issue_comment.issue_number}: {msg}")
