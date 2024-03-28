@@ -21,9 +21,9 @@ def process_comment(issue: IssueComment, settings: Settings) -> HttpResponse:
         log.debug(f"{issue.issue_number}: ignoring event as it is not a pull request")
         return issue_response("ignore-not-pr")
 
-    if issue.action not in ("created", "edited"):
+    if issue.action not in ("created", "edited", "submitted"):
         log.debug(
-            f"{issue.issue_number}: ignoring event as actions is not created or edited"
+            f"{issue.issue_number}: ignoring event as actions is not created, edited or submitted"
         )
         return issue_response("ignore-action")
 
