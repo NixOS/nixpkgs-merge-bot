@@ -55,7 +55,7 @@ class GithubWebHook(BaseHTTPRequestHandler):
                 handler = check_run
             case "pull_request_review_comment":
                 handler = review_comment
-            case "pull_request":
+            case "pull_request_review":
                 handler = review
             case _:
                 log.error(f"event_type '{event_type}' not registered")
