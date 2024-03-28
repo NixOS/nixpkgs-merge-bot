@@ -37,3 +37,15 @@ limitations:
   branches.
 
 - CI results validation is currently absent.
+
+---
+
+<img src="https://qr.helsinki-systems.de/logo/github" height="200">
+
+Supported by [Helsinki Systems](https://helsinki-systems.de/) Systems and
+[lassulus](https://github.com/Lassulus). From package maintenance to
+comprehensive support, we ensure your infrastructure is efficient, up-to-date,
+and secure. Whether it's in our data center or on your premises, we tailor our
+services to fit your needs.
+
+[Contact us to learn more.](https://helsinki-systems.de/kontakt)
