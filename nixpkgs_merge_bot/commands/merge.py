@@ -128,6 +128,7 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
             issue_comment.issue_number,
             issue_comment.comment_id,
             "rocket",
+            issue_comment.comment_type,
         )
         check_suite_result = process_pull_request_status(client, pull_request)
         decline_reasons.extend(check_suite_result.messages)

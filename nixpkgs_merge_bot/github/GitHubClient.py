@@ -175,17 +175,29 @@ class GithubClient:
             )
 
     def create_issue_reaction(
-        self, owner: str, repo: str, issue_number: int, comment_id: int, reaction: str
+        self,
+        owner: str,
+        repo: str,
+        issue_number: int,
+        comment_id: int,
+        reaction: str,
+        issue_type: str = "issue_comment",
     ) -> HttpResponse | None:
         global STAGING
         if STAGING:
             log.debug("Staging, not creating reaction")
             return None
         else:
-            return self.post(
-                f"/repos/{owner}/{repo}/issues/comments/{comment_id}/reactions",
-                {"content": reaction},
-            )
+            if issue_type == "review":
+                return self.post(
+                    f"/repos/{owner}/{repo}/pulls/comments/{comment_id}/reactions",
+                    {"content": reaction},
+                )
+            else:
+                return self.post(
+                    f"/repos/{owner}/{repo}/issues/comments/{comment_id}/reactions",
+                    {"content": reaction},
+                )
 
     def merge_pull_request(
         self, owner: str, repo: str, pr_number: int, sha: str

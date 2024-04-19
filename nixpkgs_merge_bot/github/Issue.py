@@ -12,6 +12,7 @@ class IssueComment:
     text: str
     action: str
     comment_id: int
+    comment_type: str
     repo_owner: str
     repo_name: str
     issue_number: int
@@ -45,6 +46,7 @@ class IssueComment:
                 commenter_login=body["comment"]["user"]["login"],
                 text=body["comment"]["body"],
                 comment_id=body["comment"]["id"],
+                comment_type="issue_comment",
                 repo_owner=body["repository"]["owner"]["login"],
                 repo_name=body["repository"]["name"],
                 issue_number=body["issue"]["number"],
@@ -67,6 +69,7 @@ class IssueComment:
                 commenter_login=body["comment"]["user"]["login"],
                 text=body["comment"]["body"],
                 comment_id=body["comment"]["id"],
+                comment_type="review_comment",
                 repo_owner=body["repository"]["owner"]["login"],
                 repo_name=body["repository"]["name"],
                 issue_number=body["pull_request"]["number"],
@@ -88,6 +91,7 @@ class IssueComment:
                 commenter_login=body["review"]["user"]["login"],
                 text=body["review"]["body"],
                 comment_id=body["review"]["id"],
+                comment_type="review",
                 repo_owner=body["repository"]["owner"]["login"],
                 repo_name=body["repository"]["name"],
                 issue_number=body["pull_request"]["number"],
