@@ -217,7 +217,7 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
         log.info(
             f"{issue_comment.issue_number}: No merge stratgey passed, we let the user know"
         )
-        msg = f"@{issue_comment.commenter_login} merge not permitted: \n"
+        msg = f"@{issue_comment.commenter_login} merge not permitted (#305350): \n"
         for reason in decline_reasons:
             msg += f"{reason}\n"
 
