@@ -36,8 +36,6 @@ limitations:
 - Supports merging only into the `master`, `staging`, and `staging-next`
   branches.
 
-- CI results validation is currently absent.
-
 ---
 
 <img src="https://qr.helsinki-systems.de/logo/github" height="200">
