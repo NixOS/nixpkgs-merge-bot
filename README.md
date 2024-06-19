@@ -26,6 +26,10 @@ Upon invocation, the bot will verify if the conditions are suitable. If
 everything is in order, it merges the PR. Otherwise, it provides feedback
 through a comment detailing the discrepancies.
 
+## Contact
+
+We have a [matrix channel](https://matrix.to/#/#nixpkgs-merge-bot:lassul.us).
+
 ## Constraints
 
 To ensure security and a focused utility, the bot adheres to specific
