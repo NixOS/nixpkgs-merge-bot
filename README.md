@@ -6,6 +6,8 @@ Developed by Lassulus and Mic92 during #Oceansprint, we proudly introduce the
 `nixpkgs-merge-bot`. Celebrating the milestone of 5000 concurrent open pull
 requests on nixpkgs, we're enhancing the merging process with this bot! 🎉
 
+[Mergebot RFC](https://github.com/NixOS/rfcs/pull/172)
+
 ## Features
 
 This bot empowers package maintainers by granting them the capability to merge
