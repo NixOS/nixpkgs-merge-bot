@@ -167,14 +167,12 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
             except GithubClientError as e:
                 log.exception(f"{issue_comment.issue_number}: merge failed")
                 decline_reasons.extend(
-                    "\n".join(
-                        [
-                            f"@{issue_comment.commenter_login} merge failed:",
-                            "```",
-                            f"{e.code} {e.reason}: {e.body}",
-                            "```",
-                        ]
-                    )
+                    [
+                        f"@{issue_comment.commenter_login} merge failed:",
+                        "```",
+                        f"{e.code} {e.reason}: {e.body}",
+                        "```",
+                    ]
                 )
 
                 client.create_issue_comment(
