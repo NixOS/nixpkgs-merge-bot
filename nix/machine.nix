@@ -37,6 +37,7 @@
           allowReboot = true;
           flake = "github:nixos/nixpkgs-merge-bot#nixpkgs-merge-bot";
           dates = "*:0/10:00";
+          flags = [ "--refresh" ];
         };
       })
       ./modules/nixpkgs-merge-bot.nix
