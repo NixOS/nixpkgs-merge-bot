@@ -156,7 +156,7 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
                     issue_comment.issue_number,
                     pull_request.head_sha,
                 )
-                log.info(f"{issue_comment.issue_number }: Merge completed")
+                log.info(f"{issue_comment.issue_number }: Merge completed (#306934)")
                 client.create_issue_comment(
                     issue_comment.repo_owner,
                     issue_comment.repo_name,
