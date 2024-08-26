@@ -161,7 +161,7 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
                     issue_comment.repo_owner,
                     issue_comment.repo_name,
                     issue_comment.issue_number,
-                    "Merge completed",
+                    "Merge completed (#306934)",
                 )
                 return issue_response("merged")
             except GithubClientError as e:
