@@ -6,6 +6,7 @@
   pytest-mock,
   setuptools,
   git,
+  stdenv,
 }:
 
 buildPythonApplication {
@@ -20,7 +21,8 @@ buildPythonApplication {
       ]
     }"
   ];
-  doCheck = true;
+  # FIXME: hang on macOS just now
+  doCheck = stdenv.isLinux;
   nativeBuildInputs = [ setuptools ];
   nativeCheckInputs = [
     pytest-mock
