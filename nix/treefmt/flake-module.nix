@@ -8,7 +8,7 @@
     {
       treefmt = {
         projectRootFile = ".git/config";
-        programs.nixpkgs-fmt.enable = true;
+        programs.nixfmt.enable = true;
         programs.shellcheck.enable = true;
         programs.deno.enable = true;
         settings.formatter.deno.excludes = [
