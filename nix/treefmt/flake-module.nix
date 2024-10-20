@@ -1,32 +1,29 @@
-{ inputs, ... }: {
+{ inputs, ... }:
+{
   imports = [
     inputs.treefmt-nix.flakeModule
   ];
-  perSystem = { pkgs, ... }: {
-    treefmt = {
-      projectRootFile = ".git/config";
-      programs.nixpkgs-fmt.enable = true;
-      programs.shellcheck.enable = true;
-      programs.deno.enable = true;
-      settings.formatter.deno = {
-        excludes = [ "tests/data/*.json" ];
-      };
-      settings.formatter.shellcheck.options = [ "-s" "bash" ];
-
-      programs.mypy.enable = true;
-      programs.mypy.directories."." = { };
-      settings.formatter.python = {
-        command = "sh";
-        options = [
-          "-eucx"
-          ''
-            ${pkgs.ruff}/bin/ruff check --fix "$@"
-            ${pkgs.python3.pkgs.black}/bin/black "$@"
-          ''
-          "--" # this argument is ignored by bash
+  perSystem =
+    { pkgs, ... }:
+    {
+      treefmt = {
+        projectRootFile = ".git/config";
+        programs.nixfmt.enable = true;
+        programs.shellcheck.enable = true;
+        programs.deno.enable = true;
+        settings.formatter.deno.excludes = [
+          "tests/data/*.json"
+          "secrets.yaml"
         ];
-        includes = [ "*.py" ];
+        settings.formatter.shellcheck.options = [
+          "-s"
+          "bash"
+        ];
+
+        programs.mypy.enable = true;
+        programs.mypy.directories."." = { };
+        programs.ruff.check = true;
+        programs.ruff.format = true;
       };
     };
-  };
 }
