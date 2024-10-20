@@ -22,18 +22,8 @@
 
         programs.mypy.enable = true;
         programs.mypy.directories."." = { };
-        settings.formatter.python = {
-          command = "sh";
-          options = [
-            "-eucx"
-            ''
-              ${pkgs.ruff}/bin/ruff check --fix "$@"
-              ${pkgs.python3.pkgs.black}/bin/black "$@"
-            ''
-            "--" # this argument is ignored by bash
-          ];
-          includes = [ "*.py" ];
-        };
+        programs.ruff.check = true;
+        programs.ruff.format = true;
       };
     };
 }
