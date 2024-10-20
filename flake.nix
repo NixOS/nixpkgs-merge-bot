@@ -20,8 +20,10 @@
     srvos.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = inputs@{ self, flake-parts, ... }:
-    flake-parts.lib.mkFlake { inherit inputs; } ({ lib, ... }:
+  outputs =
+    inputs@{ self, flake-parts, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } (
+      { lib, ... }:
       {
         imports = [
           ./nix/checks/flake-module.nix
@@ -29,21 +31,39 @@
           ./nix/modules/flake-module.nix
           ./nix/machine.nix
         ];
-        systems = [ "x86_64-linux" "aarch64-linux" ];
-        perSystem = { self', pkgs, system, ... }: {
-          packages.default = pkgs.python3.pkgs.callPackage ./default.nix { };
-          devShells.default = pkgs.mkShell {
-            packages = with pkgs; [ nixos-anywhere sops ]
-              ++ self'.packages.default.buildInputs
-              ++ self'.packages.default.nativeBuildInputs;
+        systems = [
+          "x86_64-linux"
+          "aarch64-linux"
+        ];
+        perSystem =
+          {
+            self',
+            pkgs,
+            system,
+            ...
+          }:
+          {
+            packages.default = pkgs.python3.pkgs.callPackage ./default.nix { };
+            devShells.default = pkgs.mkShell {
+              packages =
+                with pkgs;
+                [
+                  nixos-anywhere
+                  sops
+                ]
+                ++ self'.packages.default.buildInputs
+                ++ self'.packages.default.nativeBuildInputs;
+            };
+            checks =
+              let
+                nixosMachines = lib.mapAttrs' (
+                  name: config: lib.nameValuePair "nixos-${name}" config.config.system.build.toplevel
+                ) ((lib.filterAttrs (_: config: config.pkgs.system == system)) self.nixosConfigurations);
+                packages = lib.mapAttrs' (n: lib.nameValuePair "package-${n}") self'.packages;
+                devShells = lib.mapAttrs' (n: lib.nameValuePair "devShell-${n}") self'.devShells;
+              in
+              lib.optionalAttrs (pkgs.stdenv.isLinux) nixosMachines // packages // devShells;
           };
-          checks =
-            let
-              nixosMachines = lib.mapAttrs' (name: config: lib.nameValuePair "nixos-${name}" config.config.system.build.toplevel) ((lib.filterAttrs (_: config: config.pkgs.system == system)) self.nixosConfigurations);
-              packages = lib.mapAttrs' (n: lib.nameValuePair "package-${n}") self'.packages;
-              devShells = lib.mapAttrs' (n: lib.nameValuePair "devShell-${n}") self'.devShells;
-            in
-            nixosMachines // packages // devShells;
-        };
-      });
+      }
+    );
 }
