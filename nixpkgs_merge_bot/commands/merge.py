@@ -26,64 +26,42 @@ def process_pull_request_status(
 ) -> CheckRunResult:
     check_run_result = CheckRunResult(True, False, False, [])
 
-    # As ofBorg takes a while to add a check_suite to the pull request we have to check the statues first if this is still pending
-
-    statuses = client.get_statuses_for_commit(
+    log.debug(f"{pull_request.number}: Getting check suites for commit")
+    check_runs_for_commit = client.get_check_runs_for_commit(
         pull_request.repo_owner, pull_request.repo_name, pull_request.head_sha
-    ).json()
-    if statuses["state"] != "success":
-        check_run_result.success = False
-        log.info(f"{pull_request.number}: Status {statuses['state']} is not success")
-    if statuses["state"] == "pending":
-        check_run_result.success = False
-        check_run_result.pending = True
-        message = "Some status is still pending"
-        log.info(f"{pull_request.number}: {message}")
-        check_run_result.messages.append(message)
-    if check_run_result.success:
+    )
+    for check_run in check_runs_for_commit.json()["check_runs"]:
         log.debug(
-            f"{pull_request.number} All the statues where fine we now move to check the check_suites"
+            f"{pull_request.number}: {check_run['name']} conclusion: {check_run['conclusion']} and status: {check_run['status']}"
         )
-        log.debug(f"{pull_request.number}: Getting check suites for commit")
-        check_runs_for_commit = client.get_check_runs_for_commit(
-            pull_request.repo_owner, pull_request.repo_name, pull_request.head_sha
-        )
-        for check_run in check_runs_for_commit.json()["check_runs"]:
-            log.debug(
-                f"{pull_request.number}: {check_run['name']} conclusion: {check_run['conclusion']} and status: {check_run['status']}"
-            )
-            # Ignoring darwin checks for ofborg as these get stucked quite often
-            if "darwin" in check_run["name"] and (
-                check_run["status"] == "queued" or check_run["status"] == "neutral"
+        # Ignoring darwin checks for ofborg as these get stucked quite often
+        if "darwin" in check_run["name"] and (
+            check_run["status"] == "queued" or check_run["status"] == "neutral"
+        ):
+            log.debug(f"{pull_request.number}: Ignoring darwin check")
+            continue
+
+        if check_run["status"] != "completed":
+            message = f"Check run {check_run['name']} is not completed, we will wait for it to finish and if it succeeds we will merge this."
+            check_run_result.messages.append(message)
+            log.info(f"{pull_request.number}: {message}")
+            check_run_result.success = False
+            if check_run["status"] == "in_progress" or check_run["status"] == "queued":
+                log.debug(f"{pull_request.number}: Check run is in progress or queued")
+                check_run_result.pending = True
+        else:
+            # if the state is not success or skipped we will decline the merge. The state can be
+            # Can be one of: success, failure, neutral, cancelled, timed_out, action_required, stale, null, skipped, startup_failure
+            if not (
+                check_run["conclusion"] == "success"
+                or check_run["conclusion"] == "skipped"
+                or check_run["conclusion"] == "neutral"
             ):
-                log.debug(f"{pull_request.number}: Ignoring darwin check")
-                continue
-            if check_run["status"] != "completed":
-                message = f"Check run {check_run['name']} is not completed, we will wait for it to finish and if it succeeds we will merge this."
-                check_run_result.messages.append(message)
-                log.info(f"{pull_request.number}: {message}")
                 check_run_result.success = False
-                if (
-                    check_run["status"] == "in_progress"
-                    or check_run["status"] == "queued"
-                ):
-                    log.debug(
-                        f"{pull_request.number}: Check run is in progress or queued"
-                    )
-                    check_run_result.pending = True
-            else:
-                # if the state is not success or skipped we will decline the merge. The state can be
-                # Can be one of: success, failure, neutral, cancelled, timed_out, action_required, stale, null, skipped, startup_failure
-                if not (
-                    check_run["conclusion"] == "success"
-                    or check_run["conclusion"] == "skipped"
-                    or check_run["conclusion"] == "neutral"
-                ):
-                    check_run_result.success = False
-                    check_run_result.failed = True
-                    message = f"Check suite {check_run['app']['name']} is {check_run['conclusion']}"
-                    check_run_result.messages.append(message)
-                    log.info(f"{pull_request.number}: message")
+                check_run_result.failed = True
+                message = f"Check suite {check_run['app']['name']} is {check_run['conclusion']}"
+                check_run_result.messages.append(message)
+                log.info(f"{pull_request.number}: message")
     return check_run_result
 
 
