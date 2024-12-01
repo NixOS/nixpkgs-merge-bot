@@ -7,7 +7,8 @@
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
 
     # used for development
-    treefmt-nix.url = "github:numtide/treefmt-nix";
+    # https://github.com/numtide/treefmt-nix/pull/269
+    treefmt-nix.url = "github:numtide/treefmt-nix/mypy";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
 
     sops-nix.url = "github:Mic92/sops-nix";

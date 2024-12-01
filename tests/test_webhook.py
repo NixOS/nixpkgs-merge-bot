@@ -91,9 +91,6 @@ def default_mocks(mocker: MockerFixture) -> dict[str, Any]:
         "nixpkgs_merge_bot.github.GitHubClient.GithubClient.get_check_runs_for_commit": FakeHttpResponse(
             TEST_DATA / "get_check_run_for_commit.json"
         ),
-        "nixpkgs_merge_bot.github.GitHubClient.GithubClient.get_statuses_for_commit": FakeHttpResponse(
-            TEST_DATA / "get_statuses_for_commit.json"
-        ),
         "nixpkgs_merge_bot.github.GitHubClient.GithubClient.create_issue_comment": FakeHttpResponse(
             TEST_DATA / "issue_comment.merge.json"
         ),  # unused
