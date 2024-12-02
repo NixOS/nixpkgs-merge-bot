@@ -53,6 +53,9 @@ class GithubWebHook(BaseHTTPRequestHandler):
                 handler = issue_comment
             case "check_run":
                 handler = check_run
+            case "check_suite":
+                # unhandled
+                return
             case "pull_request_review_comment":
                 handler = review_comment
             case "pull_request_review":
