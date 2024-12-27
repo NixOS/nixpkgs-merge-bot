@@ -26,7 +26,7 @@ class MergingStrategyTemplate:
         log.info(
             f"{pull_request.number}: Checking mergeability of {pull_request.number} with sha {sha}"
         )
-
+        
         if pull_request.state != "open":
             result = False
             message = f"pr is not open, state is {pull_request.state}"
@@ -41,12 +41,23 @@ class MergingStrategyTemplate:
 
         for file in body:
             filename = file["filename"]
+            file_size_bytes = self.get_file_size_bytes(pull_request, filename)
+            if file_size_bytes > self.settings.max_file_size_bytes:
+                result = False
+                message = f"{filename} exceeds the maximum allowed file size of {self.settings.max_file_size_mb} MB"
+                decline_reasons.append(message)
             if not filename.startswith("pkgs/by-name/"):
                 result = False
                 message = f"{filename} is not in pkgs/by-name/"
                 decline_reasons.append(message)
                 log.info(f"{pull_request.number}: {message}")
         return result, decline_reasons
+
+    def get_file_size_bytes(self, pull_request, filename) -> int:
+        response = self.github_client.pull_request_file_content(
+            pull_request.repo_owner, pull_request.repo_name, filename
+        )
+        return response.json()["size"]
 
     def run(
         self, pull_request: PullRequest, commenter_id: int

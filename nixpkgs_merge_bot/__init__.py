@@ -58,6 +58,12 @@ def parse_args() -> Settings:
         default="/tmp",
         help="Path where the nixpkgs-merge-bot database will be stored. Default to /tmp",
     )
+    parser.add_argument(
+        "--max-file-size-mb",
+        type=int,
+        default="2",
+        help="Maximum allowed file size in megabytes (MB). Default is 2 MB.",
+    )
     parser.add_argument("--debug", action="store_true", help="enable debug logging")
     args = parser.parse_args()
     return Settings(
@@ -71,8 +77,8 @@ def parse_args() -> Settings:
         restricted_authors=args.restricted_authors.split(" "),
         database_path=args.database_folder,
         repo_path=args.repo_path,
+        max_file_size_mb=args.max_file_size_mb
     )
-
 
 def main() -> None:
     settings = parse_args()
