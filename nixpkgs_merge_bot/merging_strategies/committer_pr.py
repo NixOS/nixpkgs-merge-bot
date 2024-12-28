@@ -9,9 +9,9 @@ from ..github.Issue import IssueComment
 log = logging.getLogger(__name__)
 
 
-class MaintainerUpdate(MergingStrategyTemplate):
+class CommitterPR(MergingStrategyTemplate):
     def run(
-        self, pull_request: PullRequest, issue_comment: IssueComment
+            self, pull_request: PullRequest, issue_comment: IssueComment
     ) -> tuple[bool, list[str]]:
         # Analyze the pull request here
         # This is just a placeholder implementation
@@ -21,10 +21,18 @@ class MaintainerUpdate(MergingStrategyTemplate):
         if not result:
             return result, decline_reasons
 
-        allowed_users = ["r-ryantm"]
+        committer_list = self.github_client.get_committer_list(
+            pull_request.repo_owner, self.settings.committer_team_slug
+        )
+
+        allowed_users = [
+            committer["login"]
+            for committer in committer_list
+        ]
+
         if pull_request.user_login not in allowed_users:
             result = False
-            message = "R-Ryantm Maintainer merge: pr author is not r-ryantm"
+            message = "CommitterPR: pr author is not committer"
             decline_reasons.append(message)
             log.info(f"{pull_request.number}: {message}")
         else:
@@ -40,10 +48,13 @@ class MaintainerUpdate(MergingStrategyTemplate):
                 if not is_maintainer(issue_comment.commenter_id, maintainers):
                     result = False
                     message = (
-                            f"R-Ryantm Maintainer merge: {issue_comment.commenter_login} is not a package maintainer, valid maintainers are: "
+                            f"CommitterPR: {issue_comment.commenter_login} is not a package maintainer, valid maintainers are: "
                         + ", ".join(m.name for m in maintainers)
                     )
                     decline_reasons.append(message)
                     log.info(f"{pull_request.number}: {message}")
+            if result:
+                log.info(f"{pull_request.number}: CommitterPR accepted the merge")
+
 
         return result, decline_reasons

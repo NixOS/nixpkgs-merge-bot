@@ -144,7 +144,7 @@ class GithubClient:
     def get_check_runs_for_commit(
         self, owner: str, repo: str, ref: str
     ) -> HttpResponse:
-        return self.get(f" /repos/{owner}/{repo}/commits/{ref}/check-runs")
+        return self.get(f"/repos/{owner}/{repo}/commits/{ref}/check-runs")
 
     def get_statuses_for_commit(self, owner: str, repo: str, ref: str) -> HttpResponse:
         return self.get(f"/repos/{owner}/{repo}/commits/{ref}/status")
@@ -167,6 +167,23 @@ class GithubClient:
 
     def get_issue(self, owner: str, repo: str, issue_number: int) -> HttpResponse:
         return self.get(f"/repos/{owner}/{repo}/issues/{issue_number}")
+
+    def get_committer_list(self, owner: str, team_slug: str):
+        per_page = 100
+        current_page = 1
+        result = []
+
+        while True:
+            page_cursor = self.get(
+                f"/orgs/{owner}/teams/{team_slug}/members?page={current_page}&per_page={per_page}"
+            ).json()
+            result += page_cursor
+            log.debug(
+                f"get_committer_list current page: {current_page}, page result: {page_cursor}"
+            )
+            if len(page_cursor) < per_page:
+                return result
+            current_page += 1
 
     def create_issue_comment(
         self, owner: str, repo: str, issue_number: int, body: str

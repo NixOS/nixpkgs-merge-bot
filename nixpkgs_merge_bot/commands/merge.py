@@ -5,6 +5,7 @@ from ..database import Database
 from ..github.GitHubClient import GithubClient, GithubClientError, get_github_client
 from ..github.Issue import IssueComment
 from ..github.PullRequest import PullRequest
+from ..merging_strategies.committer_pr import CommitterPR
 from ..merging_strategies.maintainer_update import MaintainerUpdate
 from ..settings import Settings
 from ..webhook.http_response import HttpResponse
@@ -59,9 +60,10 @@ def process_pull_request_status(
             ):
                 check_run_result.success = False
                 check_run_result.failed = True
-                message = f"Check suite {check_run['app']['name']} is {check_run['conclusion']}"
+                message = f"Check suite {check_run['app']['name']} has the state: {check_run['conclusion']}"
                 check_run_result.messages.append(message)
                 log.info(f"{pull_request.number}: {message}")
+
     return check_run_result
 
 
@@ -81,18 +83,21 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
     # Setup for this comment is done we ensured that this is address to us and we have a command
 
     log.info(f"{issue_comment.issue_number }: Checking meragability")
-    merge_stragies = [MaintainerUpdate(client, settings)]
+    merge_strategies = [MaintainerUpdate(client, settings), CommitterPR(client, settings)]
+    log.info(f"{issue_comment.issue_number }: {len(merge_strategies)} merge strategies configured")
 
     one_merge_strategy_passed = False
     decline_reasons = []
-    for merge_stragy in merge_stragies:
-        log.info(f"{issue_comment.issue_number}: Running {merge_stragy} merge strategy")
-        check, decline_reasons_strategy = merge_stragy.run(
-            pull_request, issue_comment.commenter_id
+    for merge_strategy in merge_strategies:
+        log.info(f"{issue_comment.issue_number}: Running {merge_strategy} merge strategy")
+        check, decline_reasons_strategy = merge_strategy.run(
+            pull_request, issue_comment
         )
         decline_reasons.extend(decline_reasons_strategy)
         if check:
             one_merge_strategy_passed = True
+            decline_reasons = []
+            continue
     for reason in decline_reasons:
         log.info(f"{issue_comment.issue_number}: {reason}")
 
@@ -108,8 +113,10 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
             "rocket",
             issue_comment.comment_type,
         )
+        log.info(decline_reasons)
         check_suite_result = process_pull_request_status(client, pull_request)
         decline_reasons.extend(check_suite_result.messages)
+        log.info(decline_reasons)
         if check_suite_result.pending:
             db = Database(settings)
             db.add(
@@ -167,6 +174,7 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
                 f"{issue_comment.issue_number }: OfBorg failed, we let the user know"
             )
             msg = f"@{issue_comment.commenter_login} merge not possible, check suite failed: \n"
+            decline_reasons = list(set(decline_reasons))
             for reason in decline_reasons:
                 msg += f"{reason}\n"
 
@@ -180,6 +188,7 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
             return issue_response("not-permitted-check-run-failed")
         else:
             msg = f"@{issue_comment.commenter_login} merge not permitted: \n"
+            decline_reasons = list(set(decline_reasons))
             for reason in decline_reasons:
                 msg += f"{reason}\n"
 
@@ -197,6 +206,7 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
             f"{issue_comment.issue_number}: No merge stratgey passed, we let the user know"
         )
         msg = f"@{issue_comment.commenter_login} merge not permitted (#305350): \n"  # Link Issue to track failed merges
+        decline_reasons = list(set(decline_reasons))
         for reason in decline_reasons:
             msg += f"{reason}\n"
 

@@ -99,7 +99,10 @@ def default_mocks(mocker: MockerFixture) -> dict[str, Any]:
         ),  # unused
         "nixpkgs_merge_bot.github.GitHubClient.GithubClient.get_request_file_content": FakeHttpResponse(
             TEST_DATA / "pull_request_file_content.package.json"
-        ),  #
+        ),  # h
+        "nixpkgs_merge_bot.github.GitHubClient.GithubClient.get_committer_list": json.load(
+            open(TEST_DATA / "get_collaborators.json")
+        ),
     }
 
 

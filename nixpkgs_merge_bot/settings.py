@@ -16,6 +16,7 @@ class Settings:
     repo_path: Path = Path("nixpkgs")
     database_path: str = "/tmp/"
     max_file_size_mb: int = 2
+    committer_team_slug: str = "nixpkgs-committers"
 
     @property
     def max_file_size_bytes(self) -> int:
