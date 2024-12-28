@@ -46,7 +46,6 @@ class GithubWebHook(BaseHTTPRequestHandler):
             return self.send_error(400, explain="X-Github-Event header missing")
         payload = json.loads(body)
         log.info(f"event_type '{event_type}' was triggered")
-        # TODO case "pull_request_review_comment":
 
         match event_type:
             case "issue_comment":

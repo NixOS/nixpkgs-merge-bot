@@ -85,6 +85,7 @@ class IssueComment:
     @staticmethod
     def from_review_json(body: dict[str, Any]) -> "IssueComment":
         try:
+            log.debug(body)
             return IssueComment(
                 action=body["action"],
                 commenter_id=body["review"]["user"]["id"],
