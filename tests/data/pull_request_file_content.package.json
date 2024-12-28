@@ -1,0 +1,18 @@
+{
+  "name": "package.nix",
+  "path": "pkgs/by-name/ni/nixos-anywhere/package.nix",
+  "sha": "2e6d3136cf9272090c4a4babda8946674c74a863",
+  "size": 1417,
+  "url": "https://api.github.com/repos/nixpkgs-merge/nixpkgs/contents/pkgs/by-name/ni/nixos-anywhere/package.nix?ref=c272a8a05b5776ef59a4c60b3b8f7c23a61defd0",
+  "html_url": "https://github.com/nixpkgs-merge/nixpkgs/blob/c272a8a05b5776ef59a4c60b3b8f7c23a61defd0/pkgs/by-name/ni/nixos-anywhere/package.nix",
+  "git_url": "https://api.github.com/repos/nixpkgs-merge/nixpkgs/git/blobs/2e6d3136cf9272090c4a4babda8946674c74a863",
+  "download_url": "https://raw.githubusercontent.com/nixpkgs-merge/nixpkgs/c272a8a05b5776ef59a4c60b3b8f7c23a61defd0/pkgs/by-name/ni/nixos-anywhere/package.nix",
+  "type": "file",
+  "content": "eyBzdGRlbnYKLCBmZXRjaEZyb21HaXRIdWIKLCBvcGVuc3NoCiwgZ2l0TWlu\naW1hbAosIHJzeW5jCiwgbml4CiwgY29yZXV0aWxzCiwgY3VybAosIGdudWdy\nZXAKLCBnYXdrCiwgZmluZHV0aWxzCiwgZ251c2VkCiwgbGliCiwgbWFrZVdy\nYXBwZXIKfToKbGV0CiAgcnVudGltZURlcHMgPSBbCiAgICBnaXRNaW5pbWFs\nICMgZm9yIGdpdCBmbGFrZXMKICAgIHJzeW5jCiAgICBuaXgKICAgIGNvcmV1\ndGlscwogICAgY3VybCAjIHdoZW4gdXBsb2FkaW5nIHRhcmJhbGxzCiAgICBn\nbnVncmVwCiAgICBnYXdrCiAgICBmaW5kdXRpbHMKICAgIGdudXNlZCAjIG5l\nZWRlZCBieSBzc2gtY29weS1pZAogIF07CmluCnN0ZGVudi5ta0Rlcml2YXRp\nb24gKGZpbmFsQXR0cnM6IHsKICBwbmFtZSA9ICJuaXhvcy1hbnl3aGVyZSI7\nCiAgdmVyc2lvbiA9ICIxLjAuMCI7CiAgc3JjID0gZmV0Y2hGcm9tR2l0SHVi\nIHsKICAgIG93bmVyID0gIm51bXRpZGUiOwogICAgcmVwbyA9ICJuaXhvcy1h\nbnl3aGVyZSI7CiAgICByZXYgPSBmaW5hbEF0dHJzLnZlcnNpb247CiAgICBo\nYXNoID0gInNoYTI1Ni16TStONytYRFIzNER1VHJWTEpkN0dncTFKUGxVUmRk\nc3FOT2pYWS9yY1FNPSI7CiAgfTsKICBuYXRpdmVCdWlsZElucHV0cyA9IFsg\nbWFrZVdyYXBwZXIgXTsKICBpbnN0YWxsUGhhc2UgPSAnJwogICAgaW5zdGFs\nbCAtRCAtbSAwNzU1IHNyYy9uaXhvcy1hbnl3aGVyZS5zaCAkb3V0L2Jpbi9u\naXhvcy1hbnl3aGVyZQoKICAgICMgV2UgcHJlZmVyIHRoZSBzeXN0ZW0ncyBv\ncGVuc3NoIG92ZXIgb3VyIG93biwgc2luY2UgaXQgbWlnaHQgY29tZSB3aXRo\nIGZlYXR1cmVzIG5vdCBwcmVzZW50IGluIG91cnM6CiAgICAjIGh0dHBzOi8v\nZ2l0aHViLmNvbS9udW10aWRlL25peG9zLWFueXdoZXJlL2lzc3Vlcy82Mgog\nICAgd3JhcFByb2dyYW0gJG91dC9iaW4vbml4b3MtYW55d2hlcmUgXAogICAg\nICAtLXByZWZpeCBQQVRIIDogJHtsaWIubWFrZUJpblBhdGggcnVudGltZURl\ncHN9IC0tc3VmZml4IFBBVEggOiAke2xpYi5tYWtlQmluUGF0aCBbIG9wZW5z\nc2ggXX0KICAnJzsKCiAgbWV0YSA9IHdpdGggbGliOyB7CiAgICBkZXNjcmlw\ndGlvbiA9ICJJbnN0YWxsIG5peG9zIGV2ZXJ5d2hlcmUgdmlhIHNzaCI7CiAg\nICBob21lcGFnZSA9ICJodHRwczovL2dpdGh1Yi5jb20vbnVtdGlkZS9uaXhv\ncy1hbnl3aGVyZSI7CiAgICBtYWluUHJvZ3JhbSA9ICJuaXhvcy1hbnl3aGVy\nZSI7CiAgICBsaWNlbnNlID0gbGljZW5zZXMubWl0OwogICAgcGxhdGZvcm1z\nID0gcGxhdGZvcm1zLmFsbDsKICAgIG1haW50YWluZXJzID0gWyBtYWludGFp\nbmVycy5taWM5MiBtYWludGFpbmVycy5sYXNzdWx1cyBtYWludGFpbmVycy5w\naGFlciBdOwogICAgIyBtaWMgaXMgdGhlIG9yaWdpbmFsIGF1dGhvciBvZiBu\naXhvcy1hbnl3aGVyZQogIH07Cn0pCg==\n",
+  "encoding": "base64",
+  "_links": {
+    "self": "https://api.github.com/repos/nixpkgs-merge/nixpkgs/contents/pkgs/by-name/ni/nixos-anywhere/package.nix?ref=c272a8a05b5776ef59a4c60b3b8f7c23a61defd0",
+    "git": "https://api.github.com/repos/nixpkgs-merge/nixpkgs/git/blobs/2e6d3136cf9272090c4a4babda8946674c74a863",
+    "html": "https://github.com/nixpkgs-merge/nixpkgs/blob/c272a8a05b5776ef59a4c60b3b8f7c23a61defd0/pkgs/by-name/ni/nixos-anywhere/package.nix"
+  }
+}
