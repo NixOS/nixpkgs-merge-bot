@@ -91,6 +91,7 @@ class GithubClient:
             "Content-Type": "application/json",
             "X-GitHub-Api-Version": "2022-11-28",
         }
+
         if self.api_token:
             headers["Authorization"] = f"Bearer {self.api_token}"
         headers["User-Agent"] = "nixpkgs-merge-bot"
@@ -158,6 +159,11 @@ class GithubClient:
 
     def pull_request_files(self, owner: str, repo: str, pr_number: int) -> HttpResponse:
         return self.get(f"/repos/{owner}/{repo}/pulls/{pr_number}/files")
+
+    def get_request_file_content(
+        self, owner: str, repo: str, filepath: str
+    ) -> HttpResponse:
+        return self.get(f"/repos/{owner}/{repo}/contents/{filepath}")
 
     def get_issue(self, owner: str, repo: str, issue_number: int) -> HttpResponse:
         return self.get(f"/repos/{owner}/{repo}/issues/{issue_number}")

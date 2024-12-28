@@ -15,7 +15,7 @@ class Settings:
     repo: str = "https://github.com/nixos/nixpkgs"
     repo_path: Path = Path("nixpkgs")
     database_path: str = "/tmp/"
-    max_file_size_mb: int = 2;
+    max_file_size_mb: int = 2
 
     @property
     def max_file_size_bytes(self) -> int:

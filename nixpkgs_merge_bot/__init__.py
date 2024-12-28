@@ -77,8 +77,9 @@ def parse_args() -> Settings:
         restricted_authors=args.restricted_authors.split(" "),
         database_path=args.database_folder,
         repo_path=args.repo_path,
-        max_file_size_mb=args.max_file_size_mb
+        max_file_size_mb=args.max_file_size_mb,
     )
+
 
 def main() -> None:
     settings = parse_args()

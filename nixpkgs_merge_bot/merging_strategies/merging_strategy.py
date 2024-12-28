@@ -26,7 +26,7 @@ class MergingStrategyTemplate:
         log.info(
             f"{pull_request.number}: Checking mergeability of {pull_request.number} with sha {sha}"
         )
-        
+
         if pull_request.state != "open":
             result = False
             message = f"pr is not open, state is {pull_request.state}"
@@ -54,7 +54,7 @@ class MergingStrategyTemplate:
         return result, decline_reasons
 
     def get_file_size_bytes(self, pull_request, filename) -> int:
-        response = self.github_client.pull_request_file_content(
+        response = self.github_client.get_request_file_content(
             pull_request.repo_owner, pull_request.repo_name, filename
         )
         return response.json()["size"]
