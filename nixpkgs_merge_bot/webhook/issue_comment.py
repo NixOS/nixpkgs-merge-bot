@@ -27,13 +27,18 @@ def process_comment(issue: IssueComment, settings: Settings) -> HttpResponse:
         )
         return issue_response("ignore-action")
 
-    stripped = re.sub("(<!--.*?-->)", "", issue.text, flags=re.DOTALL)
-    bot_name = re.escape(settings.bot_name)
-    for line in stripped.split("\n"):
-        if re.match(rf"^@{bot_name}\s+merge$", line.strip()):
-            return merge_command(issue, settings)
+    if issue.text is not None:
+        stripped = re.sub("(<!--.*?-->)", "", issue.text, flags=re.DOTALL)
+        stripped = re.sub("(```.*?```)", "", stripped, flags=re.DOTALL)
+        bot_name = re.escape(settings.bot_name)
+        for line in stripped.split("\n"):
+            if re.match(rf"^@{bot_name}\s+merge$", line.strip()):
+                return merge_command(issue, settings)
+        else:
+            log.debug(f"{issue.issue_number}: no command was found in comment")
+            return issue_response("no-command")
     else:
-        log.debug(f"{issue.issue_number}: no command was found in comment")
+        log.debug(f"{issue.issue_number}: comment was empty")
         return issue_response("no-command")
 
 

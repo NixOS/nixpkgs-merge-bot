@@ -134,12 +134,14 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
                     issue_comment.issue_number,
                     pull_request.head_sha,
                 )
-                log.info(f"{issue_comment.issue_number }: Merge completed (#306934)") # Link Issue to track merges
+                log.info(
+                    f"{issue_comment.issue_number }: Merge completed (#306934)"
+                )  # Link Issue to track merges
                 client.create_issue_comment(
                     issue_comment.repo_owner,
                     issue_comment.repo_name,
                     issue_comment.issue_number,
-                    "Merge completed (#306934)", # Link Issue to track merges
+                    "Merge completed (#306934)",  # Link Issue to track merges
                 )
                 return issue_response("merged")
             except GithubClientError as e:
@@ -194,7 +196,7 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
         log.info(
             f"{issue_comment.issue_number}: No merge stratgey passed, we let the user know"
         )
-        msg = f"@{issue_comment.commenter_login} merge not permitted (#305350): \n" # Link Issue to track failed merges
+        msg = f"@{issue_comment.commenter_login} merge not permitted (#305350): \n"  # Link Issue to track failed merges
         for reason in decline_reasons:
             msg += f"{reason}\n"
 
