@@ -23,7 +23,7 @@ class MaintainerUpdate(MergingStrategyTemplate):
         allowed_users = ["r-ryantm"]
         if pull_request.user_login not in allowed_users:
             result = False
-            message = f"pr author is not in restricted authors list, in the list are: {','.join(allowed_users)}"
+            message = "pr author is not r-ryantm"
             decline_reasons.append(message)
             log.info(f"{pull_request.number}: {message}")
         else:
@@ -39,7 +39,7 @@ class MaintainerUpdate(MergingStrategyTemplate):
                 if not is_maintainer(commenter_id, maintainers):
                     result = False
                     message = (
-                        f"github id: {commenter_id} is not in maintainers, valid maintainers are: "
+                        f"github id: {commenter_id} is not a package maintainer, valid maintainers are: "
                         + ", ".join(m.name for m in maintainers)
                     )
                     decline_reasons.append(message)
