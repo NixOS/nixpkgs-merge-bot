@@ -61,7 +61,7 @@ def process_pull_request_status(
                 check_run_result.failed = True
                 message = f"Check suite {check_run['app']['name']} is {check_run['conclusion']}"
                 check_run_result.messages.append(message)
-                log.info(f"{pull_request.number}: message")
+                log.info(f"{pull_request.number}: {message}")
     return check_run_result
 
 
@@ -116,7 +116,7 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
                 pull_request.head_sha,
                 f"{str(issue_comment.issue_number)};{issue_comment.commenter_id};{issue_comment.commenter_login};{issue_comment.comment_id}",
             )
-            msg = "One or more checks are still pending, please retry after they are done. darwin checks can be ignored."
+            msg = "One or more checks are still pending, I will retry this after they complete. Darwin checks can be ignored."
             log.info(f"{issue_comment.issue_number}: {msg}")
             client.create_issue_comment(
                 issue_comment.repo_owner,
@@ -134,12 +134,12 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
                     issue_comment.issue_number,
                     pull_request.head_sha,
                 )
-                log.info(f"{issue_comment.issue_number }: Merge completed (#306934)")
+                log.info(f"{issue_comment.issue_number }: Merge completed (#306934)") # Link Issue to track merges
                 client.create_issue_comment(
                     issue_comment.repo_owner,
                     issue_comment.repo_name,
                     issue_comment.issue_number,
-                    "Merge completed (#306934)",
+                    "Merge completed (#306934)", # Link Issue to track merges
                 )
                 return issue_response("merged")
             except GithubClientError as e:
@@ -194,7 +194,7 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
         log.info(
             f"{issue_comment.issue_number}: No merge stratgey passed, we let the user know"
         )
-        msg = f"@{issue_comment.commenter_login} merge not permitted (#305350): \n"
+        msg = f"@{issue_comment.commenter_login} merge not permitted (#305350): \n" # Link Issue to track failed merges
         for reason in decline_reasons:
             msg += f"{reason}\n"
 
