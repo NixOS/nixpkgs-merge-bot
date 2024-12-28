@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import urlparse
 
 from nixpkgs_merge_bot.github.GitHubClient import GithubClient
 from nixpkgs_merge_bot.settings import Settings
@@ -41,7 +42,7 @@ class MergingStrategyTemplate:
 
         for file in body:
             filename = file["filename"]
-            file_size_bytes = self.get_file_size_bytes(pull_request, filename)
+            file_size_bytes = self.get_file_size_bytes(pull_request, file)
             if file_size_bytes > self.settings.max_file_size_bytes:
                 result = False
                 message = f"{filename} exceeds the maximum allowed file size of {self.settings.max_file_size_mb} MB"
@@ -53,9 +54,13 @@ class MergingStrategyTemplate:
                 log.info(f"{pull_request.number}: {message}")
         return result, decline_reasons
 
-    def get_file_size_bytes(self, pull_request, filename) -> int:
+    def get_file_size_bytes(self, pull_request, file) -> int:
+        file_contents_url = urlparse(file["contents_url"])
         response = self.github_client.get_request_file_content(
-            pull_request.repo_owner, pull_request.repo_name, filename
+            pull_request.repo_owner,
+            pull_request.repo_name,
+            file["filename"],
+            file_contents_url.query,
         )
         return response.json()["size"]
 
