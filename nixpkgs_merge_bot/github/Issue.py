@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 class IssueComment:
     commenter_id: int
     commenter_login: str
-    text: str
+    text: str | None
     action: str
     comment_id: int
     comment_type: str
