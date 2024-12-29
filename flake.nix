@@ -8,7 +8,7 @@
 
     # used for development
     # https://github.com/numtide/treefmt-nix/pull/269
-    treefmt-nix.url = "github:numtide/treefmt-nix/mypy";
+    treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
 
     sops-nix.url = "github:Mic92/sops-nix";
@@ -30,7 +30,8 @@
           ./nix/checks/flake-module.nix
           ./nix/treefmt/flake-module.nix
           ./nix/modules/flake-module.nix
-          ./nix/machine.nix
+          ./nix/machine-prod.nix
+          ./nix/machine-staging.nix
         ];
         systems = [
           "x86_64-linux"
