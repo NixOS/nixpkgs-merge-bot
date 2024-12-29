@@ -11,7 +11,10 @@ log = logging.getLogger(__name__)
 
 class WebhookSecret:
     def __init__(self, secret: Path) -> None:
-        self.secret = secret.read_text().strip()
+        if secret.exists():
+            self.secret = secret.read_text().strip()
+        else:
+            raise FileNotFoundError
 
     def validate_signature(self, body: bytes, headers: Message) -> bool:
         # Get the signature from the payload
