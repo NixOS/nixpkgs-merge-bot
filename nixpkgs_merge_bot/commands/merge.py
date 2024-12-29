@@ -113,7 +113,6 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
             "rocket",
             issue_comment.comment_type,
         )
-        log.info(decline_reasons)
         check_suite_result = process_pull_request_status(client, pull_request)
         decline_reasons.extend(check_suite_result.messages)
         log.info(decline_reasons)
@@ -187,11 +186,10 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
             )
             return issue_response("not-permitted-check-run-failed")
         else:
-            msg = f"@{issue_comment.commenter_login} merge not permitted: \n"
+            msg = f"@{issue_comment.commenter_login} merge not permitted. The check suite result is neither failed,success nor pending\n"
             decline_reasons = list(set(decline_reasons))
             for reason in decline_reasons:
                 msg += f"{reason}\n"
-
             log.info(msg)
             client.create_issue_comment(
                 issue_comment.repo_owner,
