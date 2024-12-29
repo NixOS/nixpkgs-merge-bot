@@ -1,7 +1,8 @@
 keys:
   - &joerg age17n64ahe3wesh8l8lj0zylf4nljdmqn28hvqns2g7hgm9mdkhlsvsjuvkxz
   - &lassulus age1eq0e6uhjj2tja8v338tkdz8ema2aw5anpuyaq2uru7rt4lq7msyqqut6m2
-  - &nixpkgs-merge-bot age1553268gzdpc2mg5l7cn678d9n0y8ycjpx0y5d7fk6e6u0a5kxe0qcrp02r
+  - &nixpkgs-merge-bot-prod age1553268gzdpc2mg5l7cn678d9n0y8ycjpx0y5d7fk6e6u0a5kxe0qcrp02r
+  - &nixpkgs-merge-bot-staging age1c4yy89sz3clxkajdnkyfkhat4aaq67x8pplaxl3epu926kq4q93smtcaqv
   - &fritz age198eelnw2ds3u6vaudmzrcte4ks8k96l9lsrds78ufkaxfprsayvqxgjhhw
   - &dominic age16uwckqu3yj73ks7lww20lvxdnutpry79dmq9snaz4477wjjew5hq4g42eh
 creation_rules:
@@ -12,4 +13,5 @@ creation_rules:
           - *lassulus
           - *fritz
           - *dominic
-          - *nixpkgs-merge-bot
+          - *nixpkgs-merge-bot-prod
+          - *nixpkgs-merge-bot-staging
