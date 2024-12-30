@@ -32,25 +32,26 @@ class CommitterPR(MergingStrategyTemplate):
             message = "CommitterPR: pr author is not committer"
             decline_reasons.append(message)
             log.info(f"{pull_request.number}: {message}")
-        else:
-            files_response = self.github_client.pull_request_files(
-                pull_request.repo_owner,
-                pull_request.repo_name,
-                pull_request.number,
-            )
-            body = files_response.json()
-            for file in body:
-                filename = file["filename"]
-                maintainers = get_package_maintainers(self.settings, Path(filename))
-                if not is_maintainer(issue_comment.commenter_id, maintainers):
-                    result = False
-                    message = (
-                        f"CommitterPR: {issue_comment.commenter_login} is not a package maintainer, valid maintainers are: "
-                        + ", ".join(m.name for m in maintainers)
-                    )
-                    decline_reasons.append(message)
-                    log.info(f"{pull_request.number}: {message}")
-            if result:
-                log.info(f"{pull_request.number}: CommitterPR accepted the merge")
+            return result, decline_reasons
+
+        files_response = self.github_client.pull_request_files(
+            pull_request.repo_owner,
+            pull_request.repo_name,
+            pull_request.number,
+        )
+        body = files_response.json()
+        for file in body:
+            filename = file["filename"]
+            maintainers = get_package_maintainers(self.settings, Path(filename))
+            if not is_maintainer(issue_comment.commenter_id, maintainers):
+                result = False
+                message = (
+                    f"CommitterPR: {issue_comment.commenter_login} is not a package maintainer, valid maintainers are: "
+                    + ", ".join(m.name for m in maintainers)
+                )
+                decline_reasons.append(message)
+                log.info(f"{pull_request.number}: {message}")
+        if result:
+            log.info(f"{pull_request.number}: CommitterPR accepted the merge")
 
         return result, decline_reasons
