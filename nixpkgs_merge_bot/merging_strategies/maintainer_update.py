@@ -1,10 +1,10 @@
 import logging
 from pathlib import Path
 
+from ..github.Issue import IssueComment
 from ..github.PullRequest import PullRequest
 from ..nix.nix_utils import get_package_maintainers, is_maintainer
 from .merging_strategy import MergingStrategyTemplate
-from ..github.Issue import IssueComment
 
 log = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ class MaintainerUpdate(MergingStrategyTemplate):
                 if not is_maintainer(issue_comment.commenter_id, maintainers):
                     result = False
                     message = (
-                            f"R-Ryantm Maintainer merge: {issue_comment.commenter_login} is not a package maintainer, valid maintainers are: "
+                        f"R-Ryantm Maintainer merge: {issue_comment.commenter_login} is not a package maintainer, valid maintainers are: "
                         + ", ".join(m.name for m in maintainers)
                     )
                     decline_reasons.append(message)

@@ -83,13 +83,20 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
     # Setup for this comment is done we ensured that this is address to us and we have a command
 
     log.info(f"{issue_comment.issue_number }: Checking meragability")
-    merge_strategies = [MaintainerUpdate(client, settings), CommitterPR(client, settings)]
-    log.info(f"{issue_comment.issue_number }: {len(merge_strategies)} merge strategies configured")
+    merge_strategies = [
+        MaintainerUpdate(client, settings),
+        CommitterPR(client, settings),
+    ]
+    log.info(
+        f"{issue_comment.issue_number }: {len(merge_strategies)} merge strategies configured"
+    )
 
     one_merge_strategy_passed = False
     decline_reasons = []
     for merge_strategy in merge_strategies:
-        log.info(f"{issue_comment.issue_number}: Running {merge_strategy} merge strategy")
+        log.info(
+            f"{issue_comment.issue_number}: Running {merge_strategy} merge strategy"
+        )
         check, decline_reasons_strategy = merge_strategy.run(
             pull_request, issue_comment
         )
