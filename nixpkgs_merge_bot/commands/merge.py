@@ -85,7 +85,6 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
     log.info(f"{issue_comment.issue_number }: Checking mergeability")
     merge_strategies = [
         MaintainerUpdate(client, settings),
-        CommitterPR(client, settings),
     ]
     log.info(
         f"{issue_comment.issue_number }: {len(merge_strategies)} merge strategies configured"
