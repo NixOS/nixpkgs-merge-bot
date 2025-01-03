@@ -36,7 +36,7 @@
           security.acme.defaults.email = "nix@lassul.us";
 
           system.autoUpgrade = {
-            enable = true;
+            enable = false;
             allowReboot = true;
             flake = "github:nixos/nixpkgs-merge-bot#nixpkgs-merge-bot-staging";
             dates = "*:0/10:00";
