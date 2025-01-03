@@ -178,9 +178,6 @@ class GithubClient:
                 f"/orgs/{owner}/teams/{team_slug}/members?page={current_page}&per_page={per_page}"
             ).json()
             result += page_cursor
-            log.debug(
-                f"get_committer_list current page: {current_page}, page result: {page_cursor}"
-            )
             if len(page_cursor) < per_page:
                 return result
             current_page += 1
