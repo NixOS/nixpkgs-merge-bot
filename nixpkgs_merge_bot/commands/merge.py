@@ -145,6 +145,7 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
                     issue_comment.repo_owner,
                     issue_comment.repo_name,
                     issue_comment.issue_number,
+                    issue_comment.commenter_login,
                     pull_request.head_sha,
                 )
                 log.info(

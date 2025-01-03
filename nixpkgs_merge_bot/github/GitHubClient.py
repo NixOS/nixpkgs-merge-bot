@@ -220,7 +220,7 @@ class GithubClient:
                 )
 
     def merge_pull_request(
-        self, owner: str, repo: str, pr_number: int, sha: str
+            self, owner: str, repo: str, pr_number: int, commenter_login: str, sha: str
     ) -> HttpResponse | None:
         global STAGING
         if STAGING:
@@ -228,7 +228,11 @@ class GithubClient:
             return None
         else:
             return self.put(
-                f"/repos/{owner}/{repo}/pulls/{pr_number}/merge", data={"sha": sha}
+                    f"/repos/{owner}/{repo}/pulls/{pr_number}/merge",
+                    data={
+                        "sha": sha,
+                        "commit_message": "\n\nCo-authored-by: {commenter_login} <{commenter_email}>"
+                        }
             )
 
     def create_installation_access_token(self, installation_id: int) -> HttpResponse:
