@@ -39,4 +39,4 @@ class PullRequest:
             raise e
 
     def __str__(self) -> str:
-        return f"Pull Request:  {self.title} by {self.user_login} with head sha {self.head_sha} "
+        return f"Pull Request: {self.title} by {self.user_login} with head sha {self.head_sha} "

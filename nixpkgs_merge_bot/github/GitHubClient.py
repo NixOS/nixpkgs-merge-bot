@@ -194,6 +194,9 @@ class GithubClient:
                 f"/repos/{owner}/{repo}/issues/{issue_number}/comments", {"body": body}
             )
 
+    def get_user_info(self, username: str) -> HttpResponse:
+        return self.get(f"/users/{username}")
+
     def create_issue_reaction(
         self,
         owner: str,
@@ -220,20 +223,19 @@ class GithubClient:
                 )
 
     def merge_pull_request(
-            self, owner: str, repo: str, pr_number: int, commenter_login: str, sha: str
+        self, owner: str, repo: str, pr_number: int, sha: str, commenter
     ) -> HttpResponse | None:
         global STAGING
         if STAGING:
-            log.debug("Staging, not merging")
+            log.debug(f"pull request {pr_number}: Staging, not merging")
             return None
-        else:
-            return self.put(
-                    f"/repos/{owner}/{repo}/pulls/{pr_number}/merge",
-                    data={
-                        "sha": sha,
-                        "commit_message": "\n\nCo-authored-by: {commenter_login} <{commenter_email}>"
-                        }
-            )
+
+        commit_message = f"\n\nCo-authored-by: {commenter['login']} <{commenter['email'] or commenter['id']}>"
+        log.debug(f"pull request {pr_number}, commit message: {commit_message}")
+        return self.put(
+            f"/repos/{owner}/{repo}/pulls/{pr_number}/merge",
+            data={"sha": sha, "commit_message": commit_message},
+        )
 
     def create_installation_access_token(self, installation_id: int) -> HttpResponse:
         return self.post(f"/app/installations/{installation_id}/access_tokens", data={})
