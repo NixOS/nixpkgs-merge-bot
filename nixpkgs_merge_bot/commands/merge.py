@@ -82,7 +82,7 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
     )
     # Setup for this comment is done we ensured that this is address to us and we have a command
 
-    log.info(f"{issue_comment.issue_number }: Checking meragability")
+    log.info(f"{issue_comment.issue_number }: Checking mergeability")
     merge_strategies = [
         MaintainerUpdate(client, settings),
         CommitterPR(client, settings),
