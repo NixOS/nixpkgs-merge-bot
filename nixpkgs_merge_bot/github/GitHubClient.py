@@ -123,7 +123,7 @@ class GithubClient:
         return post_result
 
     def put(self, path: str, data: dict[str, str]) -> HttpResponse:
-        return self._request(path, "PUT")
+        return self._request(path, "PUT", data=data)
 
     def app_installations(self) -> HttpResponse:
         return self.get("/app/installations")
@@ -194,6 +194,9 @@ class GithubClient:
                 f"/repos/{owner}/{repo}/issues/{issue_number}/comments", {"body": body}
             )
 
+    def get_user_info(self, username: str) -> HttpResponse:
+        return self.get(f"/users/{username}")
+
     def create_issue_reaction(
         self,
         owner: str,
@@ -220,16 +223,19 @@ class GithubClient:
                 )
 
     def merge_pull_request(
-        self, owner: str, repo: str, pr_number: int, sha: str
+        self, owner: str, repo: str, pr_number: int, sha: str, commenter
     ) -> HttpResponse | None:
         global STAGING
         if STAGING:
-            log.debug("Staging, not merging")
+            log.debug(f"pull request {pr_number}: Staging, not merging")
             return None
-        else:
-            return self.put(
-                f"/repos/{owner}/{repo}/pulls/{pr_number}/merge", data={"sha": sha}
-            )
+
+        commit_message = f"Co-authored-by: {commenter['login']} <{commenter['email'] or commenter['id']}>"
+        log.debug(f"pull request {pr_number}, commit_message: {commit_message}")
+        return self.put(
+            f"/repos/{owner}/{repo}/pulls/{pr_number}/merge",
+            data={"sha": sha, "commit_message": commit_message},
+        )
 
     def create_installation_access_token(self, installation_id: int) -> HttpResponse:
         return self.post(f"/app/installations/{installation_id}/access_tokens", data={})

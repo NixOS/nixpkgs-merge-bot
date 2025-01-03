@@ -103,6 +103,9 @@ def default_mocks(mocker: MockerFixture) -> dict[str, Any]:
         "nixpkgs_merge_bot.github.GitHubClient.GithubClient.get_team_members": json.load(
             open(TEST_DATA / "get_team_members.json")
         ),
+        "nixpkgs_merge_bot.github.GitHubClient.GithubClient.get_user_info": FakeHttpResponse(
+            TEST_DATA / "user_with_email_r-ryantm.json"
+        ),
     }
 
 
@@ -120,7 +123,9 @@ def default_mocks(mocker: MockerFixture) -> dict[str, Any]:
         },
     ],
 )
-def test_post_merge(webhook_client: WebhookClient, mocker: MockerFixture, mock_overrides: dict[str, Any]) -> None:
+def test_post_merge(
+    webhook_client: WebhookClient, mocker: MockerFixture, mock_overrides: dict[str, Any]
+) -> None:
     mocks = default_mocks(mocker)
     mocks.update(mock_overrides)
     for name, return_value in mocks.items():
