@@ -106,8 +106,24 @@ def default_mocks(mocker: MockerFixture) -> dict[str, Any]:
     }
 
 
-def test_post_merge(webhook_client: WebhookClient, mocker: MockerFixture) -> None:
-    for name, return_value in default_mocks(mocker).items():
+@pytest.mark.parametrize(
+    "mock_overrides",
+    [
+        {
+            # r-ryantm pull request
+        },
+        {
+            # team-member pull request
+            "nixpkgs_merge_bot.github.GitHubClient.GithubClient.pull_request": FakeHttpResponse(
+                TEST_DATA / "pull_request.committer.json"
+            ),
+        },
+    ],
+)
+def test_post_merge(webhook_client: WebhookClient, mocker: MockerFixture, mock_overrides: dict[str, Any]) -> None:
+    mocks = default_mocks(mocker)
+    mocks.update(mock_overrides)
+    for name, return_value in mocks.items():
         mocker.patch(name, return_value=return_value)
 
     client = webhook_client.http_connect()
@@ -150,6 +166,11 @@ def test_post_merge(webhook_client: WebhookClient, mocker: MockerFixture) -> Non
             "nixpkgs_merge_bot.github.GitHubClient.GithubClient.pull_request_files": FakeHttpResponse(
                 TEST_DATA / "pull_request_files.not-by-name.json"
             )
+        },
+        {
+            "nixpkgs_merge_bot.github.GitHubClient.GithubClient.pull_request": FakeHttpResponse(
+                TEST_DATA / "pull_request.not-a-committer.json"
+            ),
         },
     ],
 )
