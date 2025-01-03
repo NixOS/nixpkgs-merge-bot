@@ -123,7 +123,7 @@ class GithubClient:
         return post_result
 
     def put(self, path: str, data: dict[str, str]) -> HttpResponse:
-        return self._request(path, "PUT")
+        return self._request(path, "PUT", data=data)
 
     def app_installations(self) -> HttpResponse:
         return self.get("/app/installations")
@@ -230,8 +230,8 @@ class GithubClient:
             log.debug(f"pull request {pr_number}: Staging, not merging")
             return None
 
-        commit_message = f"\n\nCo-authored-by: {commenter['login']} <{commenter['email'] or commenter['id']}>"
-        log.debug(f"pull request {pr_number}, commit message: {commit_message}")
+        commit_message = f"Co-authored-by: {commenter['login']} <{commenter['email'] or commenter['id']}>"
+        log.debug(f"pull request {pr_number}, commit_message: {commit_message}")
         return self.put(
             f"/repos/{owner}/{repo}/pulls/{pr_number}/merge",
             data={"sha": sha, "commit_message": commit_message},
