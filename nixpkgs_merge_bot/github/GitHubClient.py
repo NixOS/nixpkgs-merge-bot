@@ -168,7 +168,7 @@ class GithubClient:
     def get_issue(self, owner: str, repo: str, issue_number: int) -> HttpResponse:
         return self.get(f"/repos/{owner}/{repo}/issues/{issue_number}")
 
-    def get_committer_list(self, owner: str, team_slug: str):
+    def get_team_members(self, owner: str, team_slug: str):
         per_page = 100
         current_page = 1
         result = []

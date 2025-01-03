@@ -21,7 +21,7 @@ class CommitterPR(MergingStrategyTemplate):
         if not result:
             return result, decline_reasons
 
-        committer_list = self.github_client.get_committer_list(
+        committer_list = self.github_client.get_team_members(
             pull_request.repo_owner, self.settings.committer_team_slug
         )
 
