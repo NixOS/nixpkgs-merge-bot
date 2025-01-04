@@ -50,6 +50,11 @@ in
       default = "/var/lib/nixpkgs-merge-bot/nixpkgs";
       description = "path to the repository";
     };
+    committer-team-slug = lib.mkOption {
+      type = lib.types.str;
+      default = "nixpkgs-committers";
+      description = "Committer Team Slug";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -72,6 +77,7 @@ in
             --restricted-authors "${toString cfg.restricted-authors}" \
             --github-app-private-key $CREDENTIALS_DIRECTORY/github-app-private-key \
             --repo-path ${cfg.repo-path}
+            --committer_team_slug ${cfg.committer-team-slug}
         '';
         StateDirectory = "nixpkgs-merge-bot";
       };

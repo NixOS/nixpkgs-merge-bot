@@ -173,9 +173,9 @@ class GithubClient:
         return self.get(f"/repos/{owner}/{repo}/pulls/{pr_number}/files")
 
     def get_request_file_content(
-        self, owner: str, repo: str, filepath: str, ref_quer_param: str
+        self, owner: str, repo: str, filepath: str, ref_query_param: str
     ) -> HttpResponse:
-        return self.get(f"/repos/{owner}/{repo}/contents/{filepath}?{ref_quer_param}")
+        return self.get(f"/repos/{owner}/{repo}/contents/{filepath}?{ref_query_param}")
 
     def get_issue(self, owner: str, repo: str, issue_number: int) -> HttpResponse:
         return self.get(f"/repos/{owner}/{repo}/issues/{issue_number}")
