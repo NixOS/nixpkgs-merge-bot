@@ -5,7 +5,6 @@ from ..database import Database
 from ..github.GitHubClient import GithubClient, GithubClientError, get_github_client
 from ..github.Issue import IssueComment
 from ..github.PullRequest import PullRequest
-from ..merging_strategies.committer_pr import CommitterPR
 from ..merging_strategies.maintainer_update import MaintainerUpdate
 from ..settings import Settings
 from ..webhook.http_response import HttpResponse
@@ -85,7 +84,6 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
     log.info(f"{issue_comment.issue_number }: Checking mergeability")
     merge_strategies = [
         MaintainerUpdate(client, settings),
-        CommitterPR(client, settings),
     ]
     log.info(
         f"{issue_comment.issue_number }: {len(merge_strategies)} merge strategies configured"

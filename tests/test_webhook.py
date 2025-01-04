@@ -112,15 +112,11 @@ def default_mocks(mocker: MockerFixture) -> dict[str, Any]:
         {
             # r-ryantm pull request
         },
-        {
-            # team-member pull request
-            "nixpkgs_merge_bot.github.GitHubClient.GithubClient.pull_request": FakeHttpResponse(
-                TEST_DATA / "pull_request.committer.json"
-            ),
-        },
     ],
 )
-def test_post_merge(webhook_client: WebhookClient, mocker: MockerFixture, mock_overrides: dict[str, Any]) -> None:
+def test_post_merge(
+    webhook_client: WebhookClient, mocker: MockerFixture, mock_overrides: dict[str, Any]
+) -> None:
     mocks = default_mocks(mocker)
     mocks.update(mock_overrides)
     for name, return_value in mocks.items():
