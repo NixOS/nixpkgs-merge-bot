@@ -67,7 +67,7 @@ def parse_args() -> Settings:
     parser.add_argument(
         "--committer_team_slug",
         type=str,
-        default="nixpkgs-committer",
+        default="nixpkgs-committers",
         help="Committer Team Slug, default: nixpkgs-committers",
     )
     parser.add_argument("--debug", action="store_true", help="enable debug logging")

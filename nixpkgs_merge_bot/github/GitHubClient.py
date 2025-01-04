@@ -103,6 +103,7 @@ class GithubClient:
         req = urllib.request.Request(url, headers=headers, method=method, data=body)
         try:
             resp = urllib.request.urlopen(req)
+
         except urllib.request.HTTPError as e:
             resp_body = ""
             try:
@@ -113,11 +114,22 @@ class GithubClient:
         return HttpResponse(resp)
 
     def get(self, path: str) -> HttpResponse:
-        return self._request(path, "GET")
+        resp = self._request(path, "GET")
+        resp_headers = resp.headers()
+        log.debug(f"rate limit: {resp_headers['x-ratelimit-limit']}")
+        log.debug(f"rate limit remaining: {resp_headers['x-ratelimit-remaining']}")
+        log.debug(f"rate limit used: {resp_headers['x-ratelimit-used']}")
+        log.debug(f"rate limit reset: {resp_headers['x-ratelimit-reset']}")
+        return resp
 
     def post(self, path: str, data: dict[str, str]) -> HttpResponse:
         log.debug(f"POST {path} {data}")
         post_result = self._request(path, "POST", data)
+        resp_headers = post_result.headers()
+        log.debug(f"rate limit: {resp_headers['x-ratelimit-limit']}")
+        log.debug(f"rate limit remaining: {resp_headers['x-ratelimit-remaining']}")
+        log.debug(f"rate limit used: {resp_headers['x-ratelimit-used']}")
+        log.debug(f"rate limit reset: {resp_headers['x-ratelimit-reset']}")
         log.debug(post_result)
 
         return post_result
