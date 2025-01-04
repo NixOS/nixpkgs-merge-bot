@@ -242,7 +242,9 @@ class GithubClient:
             log.debug(f"pull request {pr_number}: Staging, not merging")
             return None
 
-        commit_message = f"Co-authored-by: {commenter['login']} <{commenter['email'] or commenter['id']}>"
+        committer_username = commenter['login']
+        committer_email = commenter['email'] if commenter['email'] else f"{committer_username}@users.noreply.github.com"
+        commit_message = f"Co-authored-by: {committer_username} <{committer_email}>"
         log.debug(f"pull request {pr_number}, commit_message: {commit_message}")
         return self.put(
             f"/repos/{owner}/{repo}/pulls/{pr_number}/merge",
