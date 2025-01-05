@@ -36,7 +36,10 @@ def process_pull_request_status(
             f"{pull_request.number}: {check_run['name']} conclusion: {check_run['conclusion']} and status: {check_run['status']}"
         )
         # ofborg currently doesn't build anything, so we don't rely on it
-        if check_run["app"]["id"] == 20500 and check_run["status"] in ("queued", "neutral"):
+        if check_run["app"]["id"] == 20500 and check_run["status"] in (
+            "queued",
+            "neutral",
+        ):
             log.debug(f"{pull_request.number}: Ignoring ofborg")
             continue
 
@@ -149,7 +152,9 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
                     pull_request.head_sha,
                     commenter_info,
                 )
-                merge_tracker_link = "Merge completed (#306934)"  # Link Issue to track merges
+                merge_tracker_link = (
+                    "Merge completed (#306934)"  # Link Issue to track merges
+                )
                 log.info(f"{issue_comment.issue_number }: {merge_tracker_link}")
                 client.create_issue_comment(
                     issue_comment.repo_owner,
