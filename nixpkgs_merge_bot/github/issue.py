@@ -32,10 +32,7 @@ class IssueComment:
             is_pull_request = False
 
         try:
-            if body["action"] is not None:
-                action = body["action"]
-            else:
-                action = "created"
+            action = body["action"] if body["action"] is not None else "created"
         except KeyError:
             action = "created"
 
@@ -58,7 +55,7 @@ class IssueComment:
         except KeyError as e:
             log.debug(e)
             log.debug(body)
-            raise e
+            raise
 
     @staticmethod
     def from_review_comment_json(body: dict[str, Any]) -> "IssueComment":
@@ -80,7 +77,7 @@ class IssueComment:
         except KeyError as e:
             log.debug(e)
             log.debug(body)
-            raise e
+            raise
 
     @staticmethod
     def from_review_json(body: dict[str, Any]) -> "IssueComment":
@@ -102,7 +99,7 @@ class IssueComment:
         except KeyError as e:
             log.debug(e)
             log.debug(body)
-            raise e
+            raise
 
     def __str__(self) -> str:
         return f"{self.issue_number}: Pull Request:  {self.title} by {self.commenter_login}"

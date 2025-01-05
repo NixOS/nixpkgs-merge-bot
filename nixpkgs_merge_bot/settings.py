@@ -14,7 +14,7 @@ class Settings:
     host: str = "[::]"
     repo: str = "https://github.com/nixos/nixpkgs"
     repo_path: Path = Path("nixpkgs")
-    database_path: str = "/tmp/"
+    database_path: str = "."
     max_file_size_mb: int = 2
     committer_team_slug: str = "nixpkgs-committers"
 

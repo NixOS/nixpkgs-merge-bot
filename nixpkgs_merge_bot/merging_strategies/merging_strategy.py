@@ -1,21 +1,23 @@
 import logging
+from abc import ABC, abstractmethod
+from typing import Any
 from urllib.parse import urlparse
 
-from nixpkgs_merge_bot.github.GitHubClient import GithubClient
+from nixpkgs_merge_bot.github.github_client import GithubClient
+from nixpkgs_merge_bot.github.issue import IssueComment
+from nixpkgs_merge_bot.github.pull_request import PullRequest
 from nixpkgs_merge_bot.settings import Settings
-
-from ..github.PullRequest import PullRequest
 
 log = logging.getLogger(__name__)
 
 
-class MergingStrategyTemplate:
+class MergingStrategyTemplate(ABC):
     def __init__(self, client: GithubClient, settings: Settings) -> None:
         self.github_client: GithubClient = client
         self.settings: Settings = settings
 
     def run_technical_limits_check(
-        self, pull_request: PullRequest, commenter_id: int
+        self, pull_request: PullRequest
     ) -> tuple[bool, list[str]]:
         result = True
         decline_reasons = []
@@ -54,7 +56,9 @@ class MergingStrategyTemplate:
                 log.info(f"{pull_request.number}: {message}")
         return result, decline_reasons
 
-    def get_file_size_bytes(self, pull_request, file) -> int:
+    def get_file_size_bytes(
+        self, pull_request: PullRequest, file: dict[str, Any]
+    ) -> int:
         file_contents_url = urlparse(file["contents_url"])
         response = self.github_client.get_request_file_content(
             pull_request.repo_owner,
@@ -64,8 +68,9 @@ class MergingStrategyTemplate:
         )
         return response.json()["size"]
 
+    @abstractmethod
     def run(
-        self, pull_request: PullRequest, commenter_id: int
+        self, pull_request: PullRequest, comment: IssueComment
     ) -> tuple[bool, list[str]]:
         # Analyze the pull request here
         # This is just a placeholder implementation

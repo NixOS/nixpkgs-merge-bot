@@ -62,8 +62,7 @@ def get_caller() -> str:
     if caller_frame is None:
         return "unknown"
     frame_info = inspect.getframeinfo(caller_frame)
-    ret = f"{frame_info.filename}:{frame_info.lineno}::{frame_info.function}"
-    return ret
+    return f"{frame_info.filename}:{frame_info.lineno}::{frame_info.function}"
 
 
 def setup_logging(level: Any, root_log_name: str = __name__.split(".")[0]) -> None:

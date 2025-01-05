@@ -2,9 +2,10 @@ import logging
 import re
 from typing import Any
 
-from ..commands.merge import merge_command
-from ..github.Issue import IssueComment
-from ..settings import Settings
+from nixpkgs_merge_bot.commands.merge import merge_command
+from nixpkgs_merge_bot.github.issue import IssueComment
+from nixpkgs_merge_bot.settings import Settings
+
 from .http_response import HttpResponse
 from .utils.issue_response import issue_response
 
@@ -34,12 +35,10 @@ def process_comment(issue: IssueComment, settings: Settings) -> HttpResponse:
         for line in stripped.split("\n"):
             if re.match(rf"^@{bot_name}\s+merge$", line.strip()):
                 return merge_command(issue, settings)
-        else:
-            log.debug(f"{issue.issue_number}: no command was found in comment")
-            return issue_response("no-command")
-    else:
-        log.debug(f"{issue.issue_number}: comment was empty")
+        log.debug(f"{issue.issue_number}: no command was found in comment")
         return issue_response("no-command")
+    log.debug(f"{issue.issue_number}: comment was empty")
+    return issue_response("no-command")
 
 
 def issue_comment(body: dict[str, Any], settings: Settings) -> HttpResponse:

@@ -1,6 +1,6 @@
 import json
 
-from ..http_response import HttpResponse
+from nixpkgs_merge_bot.webhook.http_response import HttpResponse
 
 
 def issue_response(action: str) -> HttpResponse:
