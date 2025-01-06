@@ -36,7 +36,7 @@ class PullRequest:
         except KeyError as e:
             log.debug(e)
             log.debug(body)
-            raise e
+            raise
 
     def __str__(self) -> str:
         return f"Pull Request: {self.title} by {self.user_login} with head sha {self.head_sha} "

@@ -1,3 +1,4 @@
+import contextlib
 import os
 import socket
 
@@ -15,11 +16,8 @@ def start_server(settings: Settings) -> None:
             sock = socket.fromfd(fd, socket.AF_INET, socket.SOCK_STREAM)
 
             while True:
-                try:
+                with contextlib.suppress(OSError):
                     GithubWebHook(*sock.accept(), settings)
-                except OSError:
-                    # connection closed
-                    pass
     else:
         serversocket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
         try:
@@ -28,12 +26,9 @@ def start_server(settings: Settings) -> None:
             print(f"listen on {settings.host}:{settings.port}")
             serversocket.listen()
             while True:
-                try:
+                with contextlib.suppress(OSError):
                     conn, addr = serversocket.accept()
                     GithubWebHook(conn, addr, settings)
-                except OSError:
-                    # connection closed
-                    pass
         finally:
             serversocket.shutdown(socket.SHUT_RDWR)
             serversocket.close()

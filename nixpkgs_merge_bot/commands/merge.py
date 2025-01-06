@@ -1,15 +1,19 @@
 import logging
 from dataclasses import dataclass
 
-from ..database import Database
-from ..github.GitHubClient import GithubClient, GithubClientError, get_github_client
-from ..github.Issue import IssueComment
-from ..github.PullRequest import PullRequest
-from ..merging_strategies.committer_pr import CommitterPR
-from ..merging_strategies.maintainer_update import MaintainerUpdate
-from ..settings import Settings
-from ..webhook.http_response import HttpResponse
-from ..webhook.utils.issue_response import issue_response
+from nixpkgs_merge_bot.database import Database
+from nixpkgs_merge_bot.github.github_client import (
+    GithubClient,
+    GithubClientError,
+    get_github_client,
+)
+from nixpkgs_merge_bot.github.issue import IssueComment
+from nixpkgs_merge_bot.github.pull_request import PullRequest
+from nixpkgs_merge_bot.merging_strategies.committer_pr import CommitterPR
+from nixpkgs_merge_bot.merging_strategies.maintainer_update import MaintainerUpdate
+from nixpkgs_merge_bot.settings import Settings
+from nixpkgs_merge_bot.webhook.http_response import HttpResponse
+from nixpkgs_merge_bot.webhook.utils.issue_response import issue_response
 
 log = logging.getLogger(__name__)
 
@@ -51,19 +55,18 @@ def process_pull_request_status(
             if check_run["status"] == "in_progress" or check_run["status"] == "queued":
                 log.debug(f"{pull_request.number}: Check run is in progress or queued")
                 check_run_result.pending = True
-        else:
-            # if the state is not success or skipped we will decline the merge. The state can be
-            # Can be one of: success, failure, neutral, cancelled, timed_out, action_required, stale, null, skipped, startup_failure
-            if not (
-                check_run["conclusion"] == "success"
-                or check_run["conclusion"] == "skipped"
-                or check_run["conclusion"] == "neutral"
-            ):
-                check_run_result.success = False
-                check_run_result.failed = True
-                message = f"Check suite {check_run['app']['name']} has the state: {check_run['conclusion']}"
-                check_run_result.messages.append(message)
-                log.info(f"{pull_request.number}: {message}")
+        # if the state is not success or skipped we will decline the merge. The state can be
+        # Can be one of: success, failure, neutral, cancelled, timed_out, action_required, stale, null, skipped, startup_failure
+        elif not (
+            check_run["conclusion"] == "success"
+            or check_run["conclusion"] == "skipped"
+            or check_run["conclusion"] == "neutral"
+        ):
+            check_run_result.success = False
+            check_run_result.failed = True
+            message = f"Check suite {check_run['app']['name']} has the state: {check_run['conclusion']}"
+            check_run_result.messages.append(message)
+            log.info(f"{pull_request.number}: {message}")
 
     return check_run_result
 
@@ -116,7 +119,6 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
         client.create_issue_reaction(
             issue_comment.repo_owner,
             issue_comment.repo_name,
-            issue_comment.issue_number,
             issue_comment.comment_id,
             "rocket",
             issue_comment.comment_type,
@@ -128,7 +130,7 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
             db = Database(settings)
             db.add(
                 pull_request.head_sha,
-                f"{str(issue_comment.issue_number)};{issue_comment.commenter_id};{issue_comment.commenter_login};{issue_comment.comment_id}",
+                f"{issue_comment.issue_number!s};{issue_comment.commenter_id};{issue_comment.commenter_login};{issue_comment.comment_id}",
             )
             msg = "One or more checks are still pending, I will retry this after they complete. Darwin checks can be ignored."
             log.info(f"{issue_comment.issue_number}: {msg}")
@@ -139,7 +141,7 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
                 msg,
             )
             return issue_response("merge-postponed")
-        elif check_suite_result.success:
+        if check_suite_result.success:
             try:
                 commenter_info = client.get_user_info(
                     issue_comment.commenter_login

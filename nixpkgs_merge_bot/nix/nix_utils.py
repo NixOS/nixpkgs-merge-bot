@@ -4,7 +4,7 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
-from ..settings import Settings
+from nixpkgs_merge_bot.settings import Settings
 
 log = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ def nix_eval(folder: Path, attr: str) -> bytes:
 
 
 def get_package_maintainers(settings: Settings, path: Path) -> list[Maintainer]:
-    from ..git import checkout_newest_master
+    from nixpkgs_merge_bot.git import checkout_newest_master
 
     checkout_newest_master(settings.repo_path)
     package_name = path.parts[3]
@@ -57,7 +57,4 @@ def get_package_maintainers(settings: Settings, path: Path) -> list[Maintainer]:
 
 
 def is_maintainer(github_id: int, maintainers: list[Maintainer]) -> bool:
-    for m in maintainers:
-        if m.github_id == github_id:
-            return True
-    return False
+    return any(m.github_id == github_id for m in maintainers)

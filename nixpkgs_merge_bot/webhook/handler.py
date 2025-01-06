@@ -3,7 +3,8 @@ import logging
 import socket
 from http.server import BaseHTTPRequestHandler
 
-from ..settings import Settings
+from nixpkgs_merge_bot.settings import Settings
+
 from . import http_header
 from .check_run import check_run
 from .errors import HttpError
@@ -55,7 +56,7 @@ class GithubWebHook(BaseHTTPRequestHandler):
                 handler = check_run
             case "check_suite":
                 # unhandled
-                return
+                return None
             case "pull_request_review_comment":
                 handler = review_comment
             case "pull_request_review":
@@ -69,7 +70,7 @@ class GithubWebHook(BaseHTTPRequestHandler):
         try:
             payload = json.loads(body)
         except json.JSONDecodeError as e:
-            log.error(f"invalid json: {e}")
+            log.exception("invalid json")
             return self.send_error(400, explain=f"invalid json: {e}")
 
         resp = handler(payload, self.settings)
@@ -80,6 +81,7 @@ class GithubWebHook(BaseHTTPRequestHandler):
         self.send_header("Content-length", str(len(resp.body)))
         self.end_headers()
         self.wfile.write(resp.body)
+        return None
 
     def do_POST(self) -> None:  # noqa: N802
         content_type = self.headers.get("content-type", "")

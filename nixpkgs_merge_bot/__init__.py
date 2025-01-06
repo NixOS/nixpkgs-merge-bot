@@ -55,7 +55,7 @@ def parse_args() -> Settings:
     parser.add_argument(
         "--database-folder",
         type=str,
-        default="/tmp",
+        default=".",
         help="Path where the nixpkgs-merge-bot database will be stored. Default to /tmp",
     )
     parser.add_argument(

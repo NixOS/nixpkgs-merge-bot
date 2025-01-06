@@ -3,10 +3,11 @@ import logging
 from dataclasses import dataclass
 from typing import Any
 
-from ..database import Database
-from ..github.GitHubClient import get_github_client
-from ..github.Issue import IssueComment
-from ..settings import Settings
+from nixpkgs_merge_bot.database import Database
+from nixpkgs_merge_bot.github.github_client import get_github_client
+from nixpkgs_merge_bot.github.issue import IssueComment
+from nixpkgs_merge_bot.settings import Settings
+
 from .http_response import HttpResponse
 from .issue_comment import merge_command
 

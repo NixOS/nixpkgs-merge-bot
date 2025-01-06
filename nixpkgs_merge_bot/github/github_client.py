@@ -2,10 +2,12 @@
 
 import argparse
 import base64
+import contextlib
 import http.client
 import json
 import logging
 import os
+import shutil
 import subprocess
 import time
 import urllib.parse
@@ -13,7 +15,7 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-from ..settings import Settings
+from nixpkgs_merge_bot.settings import Settings
 
 log = logging.getLogger(__name__)
 STAGING = os.environ.get("STAGING", None)
@@ -40,8 +42,7 @@ def build_jwt_payload(app_id: int) -> dict[str, Any]:
     jwt_exp_delta = 600
     now = int(time.time())
     iat = now - jwt_iat_drift
-    jwt_payload = {"iat": iat, "exp": iat + jwt_exp_delta, "iss": str(app_id)}
-    return jwt_payload
+    return {"iat": iat, "exp": iat + jwt_exp_delta, "iss": str(app_id)}
 
 
 class HttpResponse:
@@ -52,8 +53,8 @@ class HttpResponse:
         return json.load(self.raw)
 
     def save(self, path: str) -> None:
-        with open(path, "wb") as f:
-            f.write(self.raw.read())
+        with Path(path).open("wb") as f:
+            shutil.copyfileobj(self.raw, f)
 
     def headers(self) -> http.client.HTTPMessage:
         return self.raw.headers
@@ -83,8 +84,10 @@ class GithubClient:
         path: str,
         method: str,
         data: dict[str, Any] | None = None,
-        headers: dict[str, str] = {},
+        headers: dict[str, str] | None = None,
     ) -> HttpResponse:
+        if headers is None:
+            headers = {}
         url = urllib.parse.urljoin("https://api.github.com/", path)
         headers = headers.copy()
         headers = {
@@ -100,16 +103,15 @@ class GithubClient:
         if data:
             body = json.dumps(data).encode("ascii")
 
-        req = urllib.request.Request(url, headers=headers, method=method, data=body)
+        assert url.startswith("https://"), f"Invalid URL: {url}"
+        req = urllib.request.Request(url, headers=headers, method=method, data=body)  # noqa: S310
         try:
-            resp = urllib.request.urlopen(req)
+            resp = urllib.request.urlopen(req)  # noqa: S310
 
         except urllib.request.HTTPError as e:
             resp_body = ""
-            try:
+            with contextlib.suppress(Exception):
                 resp_body = e.fp.read().decode("utf-8", "replace")
-            except Exception:
-                pass
             raise GithubClientError(e.code, e.reason, url, resp_body) from e
         return HttpResponse(resp)
 
@@ -180,7 +182,7 @@ class GithubClient:
     def get_issue(self, owner: str, repo: str, issue_number: int) -> HttpResponse:
         return self.get(f"/repos/{owner}/{repo}/issues/{issue_number}")
 
-    def get_team_members(self, owner: str, team_slug: str):
+    def get_team_members(self, owner: str, team_slug: str) -> list[dict[str, Any]]:
         per_page = 100
         current_page = 1
         result = []
@@ -197,14 +199,12 @@ class GithubClient:
     def create_issue_comment(
         self, owner: str, repo: str, issue_number: int, body: str
     ) -> HttpResponse | None:
-        global STAGING
         if STAGING:
             log.debug("Staging running")
             return None
-        else:
-            return self.post(
-                f"/repos/{owner}/{repo}/issues/{issue_number}/comments", {"body": body}
-            )
+        return self.post(
+            f"/repos/{owner}/{repo}/issues/{issue_number}/comments", {"body": body}
+        )
 
     def get_user_info(self, username: str) -> HttpResponse:
         return self.get(f"/users/{username}")
@@ -213,31 +213,26 @@ class GithubClient:
         self,
         owner: str,
         repo: str,
-        issue_number: int,
         comment_id: int,
         reaction: str,
         issue_type: str = "issue_comment",
     ) -> HttpResponse | None:
-        global STAGING
         if STAGING:
             log.debug("Staging, not creating reaction")
             return None
-        else:
-            if issue_type == "review":
-                return self.post(
-                    f"/repos/{owner}/{repo}/pulls/comments/{comment_id}/reactions",
-                    {"content": reaction},
-                )
-            else:
-                return self.post(
-                    f"/repos/{owner}/{repo}/issues/comments/{comment_id}/reactions",
-                    {"content": reaction},
-                )
+        if issue_type == "review":
+            return self.post(
+                f"/repos/{owner}/{repo}/pulls/comments/{comment_id}/reactions",
+                {"content": reaction},
+            )
+        return self.post(
+            f"/repos/{owner}/{repo}/issues/comments/{comment_id}/reactions",
+            {"content": reaction},
+        )
 
     def merge_pull_request(
-        self, owner: str, repo: str, pr_number: int, sha: str, commenter
+        self, owner: str, repo: str, pr_number: int, sha: str, commenter: dict[str, Any]
     ) -> HttpResponse | None:
-        global STAGING
         if STAGING:
             log.debug(f"pull request {pr_number}: Staging, not merging")
             return None
@@ -281,7 +276,8 @@ def request_access_token(app_login: str, app_id: int, app_private_key: Path) -> 
         log.error(
             f"Installation not found for {app_login} and {app_id}, this is case sensitive!"
         )
-        raise ValueError("Access token URL not found")
+        msg = "Access token URL not found"
+        raise ValueError(msg)
 
     resp = client.create_installation_access_token(installation_id)
     return resp.json()["token"]
@@ -291,7 +287,7 @@ CACHED_CLIENT = None
 
 
 def get_github_client(settings: Settings) -> GithubClient:
-    global CACHED_CLIENT
+    global CACHED_CLIENT  # noqa: PLW0603
     if CACHED_CLIENT and CACHED_CLIENT.token_age + 300 > time.time():
         return CACHED_CLIENT
     token = request_access_token(
