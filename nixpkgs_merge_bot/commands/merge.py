@@ -108,7 +108,7 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
         if check:
             one_merge_strategy_passed = True
             decline_reasons = []
-            continue
+            break
     for reason in decline_reasons:
         log.info(f"{issue_comment.issue_number}: {reason}")
 
@@ -167,6 +167,8 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
                 return issue_response("merged")
             except GithubClientError as e:
                 log.exception(f"{issue_comment.issue_number}: merge failed")
+                msg = "GitHub API error (#371492):"  # Link Issue to track errors
+                decline_reasons.append(msg)
                 decline_reasons.extend(
                     [
                         f"@{issue_comment.commenter_login} merge failed:",
