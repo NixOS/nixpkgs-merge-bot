@@ -146,7 +146,9 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
                 commenter_info = client.get_user_info(
                     issue_comment.commenter_login
                 ).json()
-                log.info(f"{issue_comment.issue_number }: Trying to merge pull request, with head_sha: {pull_request.head_sha}")
+                log.info(
+                    f"{issue_comment.issue_number }: Trying to merge pull request, with head_sha: {pull_request.head_sha}"
+                )
                 client.merge_pull_request(
                     issue_comment.repo_owner,
                     issue_comment.repo_name,
