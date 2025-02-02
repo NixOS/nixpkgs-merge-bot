@@ -73,9 +73,9 @@ def process_pull_request_status(
 
 def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpResponse:
     log.debug(
-        f"{issue_comment.issue_number }: We have been called with the merge command"
+        f"{issue_comment.issue_number}: We have been called with the merge command"
     )
-    log.debug(f"{issue_comment.issue_number }: Getting GitHub client")
+    log.debug(f"{issue_comment.issue_number}: Getting GitHub client")
     client = get_github_client(settings)
     pull_request = PullRequest.from_json(
         client.pull_request(
@@ -86,13 +86,13 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
     )
     # Setup for this comment is done we ensured that this is address to us and we have a command
 
-    log.info(f"{issue_comment.issue_number }: Checking mergeability")
+    log.info(f"{issue_comment.issue_number}: Checking mergeability")
     merge_strategies = [
         MaintainerUpdate(client, settings),
         CommitterPR(client, settings),
     ]
     log.info(
-        f"{issue_comment.issue_number }: {len(merge_strategies)} merge strategies configured"
+        f"{issue_comment.issue_number}: {len(merge_strategies)} merge strategies configured"
     )
 
     one_merge_strategy_passed = False
@@ -114,7 +114,7 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
 
     if one_merge_strategy_passed:
         log.info(
-            f"{issue_comment.issue_number }: A merge strategy passed we will notify the user with a rocket emoji"
+            f"{issue_comment.issue_number}: A merge strategy passed we will notify the user with a rocket emoji"
         )
         client.create_issue_reaction(
             issue_comment.repo_owner,
@@ -147,7 +147,7 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
                     issue_comment.commenter_login
                 ).json()
                 log.info(
-                    f"{issue_comment.issue_number }: Trying to merge pull request, with head_sha: {pull_request.head_sha}"
+                    f"{issue_comment.issue_number}: Trying to merge pull request, with head_sha: {pull_request.head_sha}"
                 )
                 client.merge_pull_request(
                     issue_comment.repo_owner,
@@ -159,7 +159,7 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
                 merge_tracker_link = (
                     "Merge completed (#306934)"  # Link Issue to track merges
                 )
-                log.info(f"{issue_comment.issue_number }: {merge_tracker_link}")
+                log.info(f"{issue_comment.issue_number}: {merge_tracker_link}")
                 client.create_issue_comment(
                     issue_comment.repo_owner,
                     issue_comment.repo_name,
@@ -189,7 +189,7 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
                 return issue_response("merge-failed")
         elif check_suite_result.failed:
             log.info(
-                f"{issue_comment.issue_number }: OfBorg failed, we let the user know"
+                f"{issue_comment.issue_number}: OfBorg failed, we let the user know"
             )
             msg = f"@{issue_comment.commenter_login} merge not possible, check suite failed: \n"
             decline_reasons = list(set(decline_reasons))
