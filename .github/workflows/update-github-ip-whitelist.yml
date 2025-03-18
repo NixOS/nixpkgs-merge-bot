@@ -27,4 +27,4 @@ jobs:
         with:
           title: Update github ip whitelist
           token: ${{ steps.app-token.outputs.token }}
-          labels: automerge
+          labels: auto-merge

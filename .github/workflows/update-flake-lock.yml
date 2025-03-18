@@ -25,4 +25,4 @@ jobs:
         uses: DeterminateSystems/update-flake-lock@v24
         with:
           token: ${{ steps.app-token.outputs.token }}
-          pr-labels: automerge
+          pr-labels: auto-merge
