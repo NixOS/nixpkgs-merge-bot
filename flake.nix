@@ -53,6 +53,7 @@
                 [
                   nixos-anywhere
                   sops
+                  nixos-rebuild
                 ]
                 ++ self'.packages.default.buildInputs
                 ++ self'.packages.default.nativeBuildInputs;
