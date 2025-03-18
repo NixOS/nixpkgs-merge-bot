@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-nixos-rebuild --use-substitutes --flake .#nixpkgs-merge-bot-staging --target-host root@nixpkgs-merge-bot-staging.nixos.org switch
+nixos-rebuild --fast --use-substitutes --flake .#nixpkgs-merge-bot-staging --target-host root@nixpkgs-merge-bot-staging.nixos.org switch
