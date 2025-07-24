@@ -4,6 +4,7 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
+from nixpkgs_merge_bot.git import checkout_newest_master
 from nixpkgs_merge_bot.settings import Settings
 
 log = logging.getLogger(__name__)
@@ -42,8 +43,6 @@ def nix_eval(folder: Path, attr: str) -> bytes:
 
 
 def get_package_maintainers(settings: Settings, path: Path) -> list[Maintainer]:
-    from nixpkgs_merge_bot.git import checkout_newest_master
-
     checkout_newest_master(settings.repo_path)
     package_name = path.parts[3]
     # TODO maybe we want to check the merge target remote here?
