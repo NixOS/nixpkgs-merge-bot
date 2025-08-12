@@ -9,6 +9,7 @@ from nixpkgs_merge_bot.github.github_client import (
 )
 from nixpkgs_merge_bot.github.issue import IssueComment
 from nixpkgs_merge_bot.github.pull_request import PullRequest
+from nixpkgs_merge_bot.merging_strategies.backport import Backport
 from nixpkgs_merge_bot.merging_strategies.committer_pr import CommitterPR
 from nixpkgs_merge_bot.merging_strategies.maintainer_update import MaintainerUpdate
 from nixpkgs_merge_bot.settings import Settings
@@ -89,6 +90,7 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
     log.info(f"{issue_comment.issue_number}: Checking mergeability")
     merge_strategies = [
         MaintainerUpdate(client, settings),
+        Backport(client, settings),
         CommitterPR(client, settings),
     ]
     log.info(
