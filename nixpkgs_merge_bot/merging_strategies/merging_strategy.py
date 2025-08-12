@@ -17,7 +17,9 @@ class MergingStrategyTemplate(ABC):
         self.settings: Settings = settings
 
     def run_technical_limits_check(
-        self, pull_request: PullRequest
+        self,
+        pull_request: PullRequest,
+        allowed_branches: list[str] | None = None,
     ) -> tuple[bool, list[str]]:
         result = True
         decline_reasons = []
@@ -36,7 +38,14 @@ class MergingStrategyTemplate(ABC):
             decline_reasons.append(message)
             log.info(f"{pull_request.number}: {message}")
 
-        if pull_request.ref not in ("staging", "staging-next", "master"):
+        if pull_request.ref not in (
+            allowed_branches
+            or [
+                "staging",
+                "staging-next",
+                "master",
+            ]
+        ):
             result = False
             message = "pr is not targeted to any of the allowed branches: staging, staging-next, master"
             decline_reasons.append(message)
