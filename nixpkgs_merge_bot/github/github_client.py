@@ -231,23 +231,34 @@ class GithubClient:
         )
 
     def merge_pull_request(
-        self, owner: str, repo: str, pr_number: int, sha: str, commenter: dict[str, Any]
+        self, pr_number: int, node_id: str, sha: str
     ) -> HttpResponse | None:
         if STAGING:
             log.debug(f"pull request {pr_number}: Staging, not merging")
             return None
 
-        committer_username = commenter["login"]
-        committer_email = (
-            commenter["email"]
-            if commenter["email"]
-            else f"{committer_username}@users.noreply.github.com"
-        )
-        commit_message = f"Co-authored-by: {committer_username} <{committer_email}>"
-        log.debug(f"pull request {pr_number}, commit_message: {commit_message}")
-        return self.put(
-            f"/repos/{owner}/{repo}/pulls/{pr_number}/merge",
-            data={"sha": sha, "commit_message": commit_message},
+        # Using GraphQL's enablePullRequestAutoMerge mutation instead of the REST
+        # /merge endpoint, because the latter doesn't work with Merge Queues.
+        # This mutation works both with and without Merge Queues, and independently
+        # of whether the PR's required checks are still pending or have already
+        # succeeded.
+        # The only case where it doesn't work, is when there are no required status
+        # checks for the target branch. All development branches have these enabled,
+        # so this is a non-issue.
+        return self.post(
+            "/graphql",
+            data={
+                "query": """
+                    mutation ($node_id: ID!, $sha: GitObjectID) (
+                        enablePullRequestAutoMerge(input: {
+                            pullRequestId: $node_id,
+                            expectedHeadOid: $sha
+                        })
+                        {clientMutationId}
+                    )
+                """,
+                "variables": {"node_id": node_id, "sha": sha},
+            },
         )
 
     def create_installation_access_token(self, installation_id: int) -> HttpResponse:
