@@ -39,12 +39,13 @@ def process_pull_request_status(
         log.debug(
             f"{pull_request.number}: {check_run['name']} conclusion: {check_run['conclusion']} and status: {check_run['status']}"
         )
-        # ofborg currently doesn't build anything, so we don't rely on it
-        if check_run["app"]["id"] == 20500 and check_run["status"] in (
-            "queued",
-            "neutral",
+        # Ignoring darwin checks for ofborg as these get stuck quite often
+        if (
+            check_run["app"]["id"] == 20500
+            and "darwin" in check_run["name"]
+            and (check_run["status"] in ("queued", "neutral"))
         ):
-            log.debug(f"{pull_request.number}: Ignoring ofborg")
+            log.debug(f"{pull_request.number}: Ignoring ofborg darwin check")
             continue
 
         if check_run["status"] != "completed":
