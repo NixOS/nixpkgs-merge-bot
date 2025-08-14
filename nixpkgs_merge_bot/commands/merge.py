@@ -143,18 +143,13 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
             return issue_response("merge-postponed")
         if check_suite_result.success:
             try:
-                commenter_info = client.get_user_info(
-                    issue_comment.commenter_login
-                ).json()
                 log.info(
                     f"{issue_comment.issue_number}: Trying to merge pull request, with head_sha: {pull_request.head_sha}"
                 )
                 client.merge_pull_request(
-                    issue_comment.repo_owner,
-                    issue_comment.repo_name,
                     issue_comment.issue_number,
+                    pull_request.node_id,
                     pull_request.head_sha,
-                    commenter_info,
                 )
                 merge_tracker_link = (
                     "Merge completed (#306934)"  # Link Issue to track merges
