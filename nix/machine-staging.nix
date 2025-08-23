@@ -24,7 +24,6 @@
             github-app-id = 410668;
             webhook-secret-file = config.sops.secrets."staging/webhook_secret".path;
             github-app-private-key-file = config.sops.secrets."staging/github_app_key".path;
-            restricted-authors = [ "r-ryantm" ];
           };
 
           systemd.services.nixpkgs-merge-bot.environment = {

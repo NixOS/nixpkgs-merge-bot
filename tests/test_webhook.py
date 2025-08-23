@@ -20,7 +20,6 @@ SETTINGS = Settings(
     github_app_id=408064,
     github_app_login="nixpkgs-merge",
     github_app_private_key=TEST_DATA / "github_app_key.pem",
-    restricted_authors=["r-ryantm"],
     repo_path=DUMMY_NIXPKGS,
 )
 
