@@ -26,12 +26,6 @@ def parse_args() -> Settings:
         "--bot-name", type=str, default="NixOS/nixpkgs-merge-bot", help="bot name"
     )
     parser.add_argument(
-        "--restricted-authors",
-        type=str,
-        default="",
-        help="comma separated list of PR authors that can be merged",
-    )
-    parser.add_argument(
         "--github-app-login",
         type=str,
         required=True,
@@ -80,7 +74,6 @@ def parse_args() -> Settings:
         github_app_login=args.github_app_login,
         github_app_id=args.github_app_id,
         github_app_private_key=args.github_app_private_key,
-        restricted_authors=args.restricted_authors.split(" "),
         database_path=args.database_folder,
         repo_path=args.repo_path,
         committer_team_slug=args.committer_team_slug,

@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 
@@ -8,7 +8,6 @@ class Settings:
     github_app_login: str  # the organization or user that owns the github app
     github_app_id: int
     github_app_private_key: Path
-    restricted_authors: list[str] = field(default_factory=list)
     bot_name: str = "NixOS/nixpkgs-merge-bot"
     port: int = 3014
     host: str = "[::]"

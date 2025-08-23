@@ -23,11 +23,6 @@ in
       default = "nixpkgs-merge-bot";
       description = "name of the bot";
     };
-    restricted-authors = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      description = "list of restricted authors";
-    };
     github-app-login = lib.mkOption {
       type = lib.types.str;
       description = "github app login";
@@ -74,7 +69,6 @@ in
             --webhook-secret $CREDENTIALS_DIRECTORY/webhook-secret \
             --github-app-login ${cfg.github-app-login} \
             --github-app-id ${toString cfg.github-app-id} \
-            --restricted-authors "${toString cfg.restricted-authors}" \
             --github-app-private-key $CREDENTIALS_DIRECTORY/github-app-private-key \
             --repo-path ${cfg.repo-path}
             --committer_team_slug ${cfg.committer-team-slug}
