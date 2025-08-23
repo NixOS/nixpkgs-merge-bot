@@ -11,7 +11,7 @@
             "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKbBp2dH2X3dcU1zh+xW3ZsdYROKpJd3n13ssOP092qE" # Mic92
             "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBCsjXKHCkpQT4LhWIdT0vDM/E/3tw/4KHTQcdJhyqPSH0FnwC8mfP2N9oHYFa2isw538kArd5ZMo5DD1ujL5dLk= ssh@secretive.Joerg’s-Laptop.local" # Mic92
             "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIP4MIZG/hZR3Ib7faGDyK67Tk53Q1P7pE5cFIWwEFbrtAAAABHNzaDo=" # Fritz Otlinghaus, Scriptkiddi
-            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPqY9E43rQl3MHlE9L5cAqbdtePPNZADG4LGuQyzkgh6"
+            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPqY9E43rQl3MHlE9L5cAqbdtePPNZADG4LGuQyzkgh6" # _dominic
           ];
           boot.loader.grub.devices = lib.mkForce [ "/dev/sda" ];
 
