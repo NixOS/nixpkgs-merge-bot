@@ -33,7 +33,7 @@ class GithubWebHook(BaseHTTPRequestHandler):
         self.handle()
 
     # for testing
-    def do_GET(self) -> None:  # noqa: N802
+    def do_GET(self) -> None:
         self.send_response(200)
         self.send_header("Content-type", "text/plain")
         self.send_header("Content-length", "2")
@@ -83,7 +83,7 @@ class GithubWebHook(BaseHTTPRequestHandler):
         self.wfile.write(resp.body)
         return None
 
-    def do_POST(self) -> None:  # noqa: N802
+    def do_POST(self) -> None:
         content_type = self.headers.get("content-type", "")
         content_type, _ = http_header.parse_header(content_type)
 
