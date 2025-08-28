@@ -75,10 +75,6 @@ class GithubClientError(Exception):
         self.body = resp_body
 
 
-class GraphQLError(Exception):
-    pass
-
-
 class GithubClient:
     def __init__(self, api_token: str | None) -> None:
         self.api_token = api_token
@@ -261,10 +257,14 @@ class GithubClient:
                 """),
                 "variables": {"node_id": node_id, "sha": sha},
             },
-        ).json()
+        )
+
+        resp_body = resp.json()
 
         if "errors" in resp:
-            raise GraphQLError(resp["errors"][0]["message"])
+            raise GithubClientError(
+                resp.status, resp["errors"][0]["message"], resp.url, resp_body
+            )
 
         return resp
 
