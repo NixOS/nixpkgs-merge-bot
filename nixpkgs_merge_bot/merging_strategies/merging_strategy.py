@@ -1,6 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, ClassVar
 from urllib.parse import urlparse
 
 from nixpkgs_merge_bot.github.github_client import GithubClient
@@ -12,12 +12,16 @@ log = logging.getLogger(__name__)
 
 
 class MergingStrategyTemplate(ABC):
+    allowed_branches: ClassVar[frozenset[str]]
+    allowed_user: ClassVar[str]
+
     def __init__(self, client: GithubClient, settings: Settings) -> None:
         self.github_client: GithubClient = client
         self.settings: Settings = settings
 
     def run_technical_limits_check(
-        self, pull_request: PullRequest
+        self,
+        pull_request: PullRequest,
     ) -> tuple[bool, list[str]]:
         result = True
         decline_reasons = []
@@ -36,9 +40,9 @@ class MergingStrategyTemplate(ABC):
             decline_reasons.append(message)
             log.info(f"{pull_request.number}: {message}")
 
-        if pull_request.ref not in ("staging", "staging-next", "master"):
+        if pull_request.ref not in self.allowed_branches:
             result = False
-            message = "pr is not targeted to any of the allowed branches: staging, staging-next, master"
+            message = f"pr is not targeted to any of the allowed branches: {', '.join(self.allowed_branches)}"
             decline_reasons.append(message)
             log.info(f"{pull_request.number}: {message}")
 

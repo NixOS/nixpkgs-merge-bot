@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from typing import Final
 
 from nixpkgs_merge_bot.github.issue import IssueComment
 from nixpkgs_merge_bot.github.pull_request import PullRequest
@@ -11,6 +12,14 @@ log = logging.getLogger(__name__)
 
 
 class CommitterPR(MergingStrategyTemplate):
+    allowed_branches: Final[frozenset[str]] = frozenset(
+        [
+            "master",
+            "staging",
+            "staging-next",
+        ]
+    )
+
     def run(
         self, pull_request: PullRequest, issue_comment: IssueComment
     ) -> tuple[bool, list[str]]:
