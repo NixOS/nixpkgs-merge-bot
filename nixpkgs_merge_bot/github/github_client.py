@@ -14,7 +14,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 from textwrap import dedent
-from typing import Any
+from typing import Any, Literal
 
 from nixpkgs_merge_bot.settings import Settings
 
@@ -235,41 +235,59 @@ class GithubClient:
             log.debug(f"pull request {pr_number}: Staging, not merging")
             return None
 
-        # Using GraphQL's enablePullRequestAutoMerge mutation instead of the REST
-        # /merge endpoint, because the latter doesn't work with Merge Queues.
-        # This mutation works both with and without Merge Queues, and independently
-        # of whether the PR's required checks are still pending or have already
-        # succeeded.
-        # The only case where it doesn't work, is when there are no required status
-        # checks for the target branch. All development branches have these enabled,
-        # so this is a non-issue.
-        resp = self.post(
-            "/graphql",
-            data={
-                "query": dedent("""
-                    mutation ($node_id: ID!, $sha: GitObjectID) {
-                        enablePullRequestAutoMerge(input: {
-                            pullRequestId: $node_id,
-                            expectedHeadOid: $sha
-                        })
-                        {clientMutationId}
-                    }
-                """),
-                "variables": {"node_id": node_id, "sha": sha},
-            },
-        )
-
-        resp_body = resp.json()
-
-        if "errors" in resp_body:
-            raise GithubClientError(
-                resp.raw.status,
-                resp_body["errors"][0]["message"],
-                resp.raw.url,
-                resp_body,
+        def graphql(
+            mutation: Literal[
+                "enablePullRequestAutoMerge", "enqueuePullRequest", "mergePullRequest"
+            ],
+        ) -> HttpResponse:
+            resp = self.post(
+                "/graphql",
+                data={
+                    "query": dedent(f"""\
+                        mutation ($node_id: ID!, $sha: GitObjectID) {{
+                            {mutation}(input: {{
+                                pullRequestId: $node_id,
+                                expectedHeadOid: $sha
+                            }})
+                            {{clientMutationId}}
+                        }}
+                    """),
+                    "variables": {"node_id": node_id, "sha": sha},
+                },
             )
 
-        return resp
+            resp_body = resp.json()
+
+            if "errors" in resp_body:
+                raise GithubClientError(
+                    resp.raw.status,
+                    resp_body["errors"][0]["message"],
+                    resp.raw.url,
+                    resp_body,
+                )
+
+            return resp
+
+        # Using GraphQL's enablePullRequestAutoMerge mutation instead of the REST
+        # /merge endpoint, because the latter doesn't work with Merge Queues.
+        # This mutation works both with and without Merge Queues.
+        # It doesn't work when there are no required status checks for the target branch.
+        # All development branches have these enabled, so this is a non-issue.
+        try:
+            return graphql("enablePullRequestAutoMerge")
+        except GithubClientError as e:
+            log.info(f"pull request {pr_number} auto merge failed: {e}")
+
+        # Auto-merge doesn't work if the target branch has already run all CI, in which
+        # case the PR must either be enqueued or merged explicitly.
+        try:
+            return graphql("enqueuePullRequest")
+        except GithubClientError as e:
+            log.info(f"pull request {pr_number} enqueing failed: {e}")
+
+        # Enqueing doesn't work if there is no merge queue for the target branch, in
+        # which case we merge directly.
+        return graphql("mergePullRequest")
 
     def create_installation_access_token(self, installation_id: int) -> HttpResponse:
         return self.post(f"/app/installations/{installation_id}/access_tokens", data={})
