@@ -232,7 +232,9 @@ class GithubClient:
             {"content": reaction},
         )
 
-    def merge_pull_request(self, pr_number: int, node_id: str) -> HttpResponse | None:
+    def merge_pull_request(
+        self, pr_number: int, node_id: str, sha: str
+    ) -> HttpResponse | None:
         if STAGING:
             log.debug(f"pull request {pr_number}: Staging, not merging")
             return None
@@ -249,12 +251,15 @@ class GithubClient:
             "/graphql",
             data={
                 "query": dedent("""
-                    mutation ($node_id: ID!) {
-                        enablePullRequestAutoMerge(input: { pullRequestId: $node_id })
+                    mutation ($node_id: ID!, $sha: GitObjectID) {
+                        enablePullRequestAutoMerge(input: {
+                            pullRequestId: $node_id,
+                            expectedHeadOid: $sha
+                        })
                         {clientMutationId}
                     }
                 """),
-                "variables": {"node_id": node_id},
+                "variables": {"node_id": node_id, "sha": sha},
             },
         ).json()
 
