@@ -261,9 +261,12 @@ class GithubClient:
 
         resp_body = resp.json()
 
-        if "errors" in resp:
+        if "errors" in resp_body:
             raise GithubClientError(
-                resp.status, resp["errors"][0]["message"], resp.url, resp_body
+                resp.raw.status,
+                resp_body["errors"][0]["message"],
+                resp.raw.url,
+                resp_body,
             )
 
         return resp
