@@ -75,10 +75,6 @@ class GithubClientError(Exception):
         self.body = resp_body
 
 
-class GraphQLError(Exception):
-    pass
-
-
 class GithubClient:
     def __init__(self, api_token: str | None) -> None:
         self.api_token = api_token
@@ -232,7 +228,9 @@ class GithubClient:
             {"content": reaction},
         )
 
-    def merge_pull_request(self, pr_number: int, node_id: str) -> HttpResponse | None:
+    def merge_pull_request(
+        self, pr_number: int, node_id: str, sha: str
+    ) -> HttpResponse | None:
         if STAGING:
             log.debug(f"pull request {pr_number}: Staging, not merging")
             return None
@@ -249,17 +247,24 @@ class GithubClient:
             "/graphql",
             data={
                 "query": dedent("""
-                    mutation ($node_id: ID!) {
-                        enablePullRequestAutoMerge(input: { pullRequestId: $node_id })
+                    mutation ($node_id: ID!, $sha: GitObjectID) {
+                        enablePullRequestAutoMerge(input: {
+                            pullRequestId: $node_id,
+                            expectedHeadOid: $sha
+                        })
                         {clientMutationId}
                     }
                 """),
-                "variables": {"node_id": node_id},
+                "variables": {"node_id": node_id, "sha": sha},
             },
-        ).json()
+        )
+
+        resp_body = resp.json()
 
         if "errors" in resp:
-            raise GraphQLError(resp["errors"][0]["message"])
+            raise GithubClientError(
+                resp.status, resp["errors"][0]["message"], resp.url, resp_body
+            )
 
         return resp
 
