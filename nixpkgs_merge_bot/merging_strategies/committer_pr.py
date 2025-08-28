@@ -1,10 +1,8 @@
 import logging
-from pathlib import Path
 from typing import Final
 
 from nixpkgs_merge_bot.github.issue import IssueComment
 from nixpkgs_merge_bot.github.pull_request import PullRequest
-from nixpkgs_merge_bot.nix.nix_utils import get_package_maintainers, is_maintainer
 
 from .merging_strategy import MergingStrategyTemplate
 
@@ -40,23 +38,8 @@ class CommitterPR(MergingStrategyTemplate):
             log.info(f"{pull_request.number}: {message}")
             return result, decline_reasons
 
-        files_response = self.github_client.pull_request_files(
-            pull_request.repo_owner,
-            pull_request.repo_name,
-            pull_request.number,
-        )
-        body = files_response.json()
-        for file in body:
-            filename = file["filename"]
-            maintainers = get_package_maintainers(self.settings, Path(filename))
-            if not is_maintainer(issue_comment.commenter_id, maintainers):
-                result = False
-                message = (
-                    f"CommitterPR: {issue_comment.commenter_login} is not a package maintainer, valid maintainers are: "
-                    + ", ".join(m.name for m in maintainers)
-                )
-                decline_reasons.append(message)
-                log.info(f"{pull_request.number}: {message}")
+        result, decline_reasons = self.run_maintainer_check(pull_request, issue_comment)
+
         if result:
             log.info(f"{pull_request.number}: CommitterPR accepted the merge")
 

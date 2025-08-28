@@ -1,11 +1,13 @@
 import logging
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Any, ClassVar
 from urllib.parse import urlparse
 
 from nixpkgs_merge_bot.github.github_client import GithubClient
 from nixpkgs_merge_bot.github.issue import IssueComment
 from nixpkgs_merge_bot.github.pull_request import PullRequest
+from nixpkgs_merge_bot.nix.nix_utils import get_package_maintainers, is_maintainer
 from nixpkgs_merge_bot.settings import Settings
 
 log = logging.getLogger(__name__)
@@ -71,6 +73,32 @@ class MergingStrategyTemplate(ABC):
             file_contents_url.query,
         )
         return response.json()["size"]
+
+    def run_maintainer_check(
+        self, pull_request: PullRequest, issue_comment: IssueComment
+    ) -> tuple[bool, list[str]]:
+        result = True
+        decline_reasons = []
+
+        files_response = self.github_client.pull_request_files(
+            pull_request.repo_owner,
+            pull_request.repo_name,
+            pull_request.number,
+        )
+        body = files_response.json()
+        for file in body:
+            filename = file["filename"]
+            maintainers = get_package_maintainers(self.settings, Path(filename))
+            if not is_maintainer(issue_comment.commenter_id, maintainers):
+                result = False
+                message = (
+                    f"{self}: {issue_comment.commenter_login} is not a package maintainer, valid maintainers are: "
+                    + ", ".join(m.name for m in maintainers)
+                )
+                decline_reasons.append(message)
+                log.info(f"{pull_request.number}: {message}")
+
+        return result, decline_reasons
 
     @abstractmethod
     def run(
