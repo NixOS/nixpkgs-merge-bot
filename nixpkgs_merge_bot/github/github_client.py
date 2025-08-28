@@ -251,13 +251,13 @@ class GithubClient:
             "/graphql",
             data={
                 "query": dedent("""
-                    mutation ($node_id: ID!, $sha: GitObjectID) (
+                    mutation ($node_id: ID!, $sha: GitObjectID) {
                         enablePullRequestAutoMerge(input: {
                             pullRequestId: $node_id,
                             expectedHeadOid: $sha
                         })
                         {clientMutationId}
-                    )
+                    }
                 """),
                 "variables": {"node_id": node_id, "sha": sha},
             },
