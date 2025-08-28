@@ -36,13 +36,13 @@ class MergingStrategyTemplate(ABC):
 
         if pull_request.state != "open":
             result = False
-            message = f"pr is not open, state is {pull_request.state}"
+            message = f"PR is not open, state is {pull_request.state}"
             decline_reasons.append(message)
             log.info(f"{pull_request.number}: {message}")
 
         if pull_request.ref not in self.allowed_branches:
             result = False
-            message = f"pr is not targeted to any of the allowed branches: {', '.join(self.allowed_branches)}"
+            message = f"PR is not targeting any of the allowed branches: {', '.join(self.allowed_branches)}"
             decline_reasons.append(message)
             log.info(f"{pull_request.number}: {message}")
 

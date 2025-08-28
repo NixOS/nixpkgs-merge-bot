@@ -35,7 +35,7 @@ class CommitterPR(MergingStrategyTemplate):
 
         if pull_request.user_login not in allowed_users:
             result = False
-            message = "CommitterPR: pr author is not committer"
+            message = "CommitterPR: PR author is not a committer"
             decline_reasons.append(message)
             log.info(f"{pull_request.number}: {message}")
             return result, decline_reasons

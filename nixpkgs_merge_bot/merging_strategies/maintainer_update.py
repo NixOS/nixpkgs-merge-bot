@@ -28,7 +28,7 @@ class MaintainerUpdate(MergingStrategyTemplate):
 
         if pull_request.user_login != self.allowed_user:
             result = False
-            message = f"MaintainerUpdate: pr author is not {self.allowed_user}"
+            message = f"MaintainerUpdate: PR author is not {self.allowed_user}"
             decline_reasons.append(message)
             log.info(f"{pull_request.number}: {message}")
         else:
