@@ -149,7 +149,6 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
                 client.merge_pull_request(
                     issue_comment.issue_number,
                     pull_request.node_id,
-                    pull_request.head_sha,
                 )
                 merge_tracker_link = (
                     "Merge completed (#306934)"  # Link Issue to track merges

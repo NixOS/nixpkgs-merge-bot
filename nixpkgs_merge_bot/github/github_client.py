@@ -75,6 +75,10 @@ class GithubClientError(Exception):
         self.body = resp_body
 
 
+class GraphQLError(Exception):
+    pass
+
+
 class GithubClient:
     def __init__(self, api_token: str | None) -> None:
         self.api_token = api_token
@@ -228,9 +232,7 @@ class GithubClient:
             {"content": reaction},
         )
 
-    def merge_pull_request(
-        self, pr_number: int, node_id: str, sha: str
-    ) -> HttpResponse | None:
+    def merge_pull_request(self, pr_number: int, node_id: str) -> HttpResponse | None:
         if STAGING:
             log.debug(f"pull request {pr_number}: Staging, not merging")
             return None
@@ -243,21 +245,23 @@ class GithubClient:
         # The only case where it doesn't work, is when there are no required status
         # checks for the target branch. All development branches have these enabled,
         # so this is a non-issue.
-        return self.post(
+        resp = self.post(
             "/graphql",
             data={
                 "query": dedent("""
-                    mutation ($node_id: ID!, $sha: GitObjectID) (
-                        enablePullRequestAutoMerge(input: {
-                            pullRequestId: $node_id,
-                            expectedHeadOid: $sha
-                        })
+                    mutation ($node_id: ID!) {
+                        enablePullRequestAutoMerge(input: { pullRequestId: $node_id })
                         {clientMutationId}
-                    )
+                    }
                 """),
-                "variables": {"node_id": node_id, "sha": sha},
+                "variables": {"node_id": node_id},
             },
-        )
+        ).json()
+
+        if "errors" in resp:
+            raise GraphQLError(resp["errors"][0]["message"])
+
+        return resp
 
     def create_installation_access_token(self, installation_id: int) -> HttpResponse:
         return self.post(f"/app/installations/{installation_id}/access_tokens", data={})
