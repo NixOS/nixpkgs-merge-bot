@@ -13,6 +13,7 @@ class PullRequest:
     repo_owner: str
     repo_name: str
     number: int
+    node_id: str
     title: str
     state: str
     head_sha: str
@@ -28,6 +29,7 @@ class PullRequest:
                 repo_owner=body["base"]["repo"]["owner"]["login"],
                 repo_name=body["base"]["repo"]["name"],
                 number=body["number"],
+                node_id=body["node_id"],
                 title=body["title"],
                 state=body["state"],
                 head_sha=body["head"]["sha"],
