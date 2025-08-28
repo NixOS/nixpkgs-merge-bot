@@ -33,4 +33,7 @@ class MaintainerUpdate(MergingStrategyTemplate):
 
         result, decline_reasons = self.run_maintainer_check(pull_request, issue_comment)
 
+        if result:
+            log.info(f"{pull_request.number}: MaintainerUpdate accepted the merge")
+
         return result, decline_reasons
