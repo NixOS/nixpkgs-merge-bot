@@ -116,13 +116,7 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
         log.info(
             f"{issue_comment.issue_number}: A merge strategy passed we will notify the user with a rocket emoji"
         )
-        client.create_issue_reaction(
-            issue_comment.repo_owner,
-            issue_comment.repo_name,
-            issue_comment.comment_id,
-            "rocket",
-            issue_comment.comment_type,
-        )
+        client.create_issue_reaction(issue_comment.node_id)
         check_suite_result = process_pull_request_status(client, pull_request)
         decline_reasons.extend(check_suite_result.messages)
         log.info(decline_reasons)
