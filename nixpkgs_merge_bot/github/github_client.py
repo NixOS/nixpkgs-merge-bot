@@ -209,23 +209,25 @@ class GithubClient:
 
     def create_issue_reaction(
         self,
-        owner: str,
-        repo: str,
-        comment_id: int,
-        reaction: str,
-        issue_type: str = "issue_comment",
+        node_id: str,
     ) -> HttpResponse | None:
         if STAGING:
             log.debug("Staging, not creating reaction")
             return None
-        if issue_type == "review":
-            return self.post(
-                f"/repos/{owner}/{repo}/pulls/comments/{comment_id}/reactions",
-                {"content": reaction},
-            )
         return self.post(
-            f"/repos/{owner}/{repo}/issues/comments/{comment_id}/reactions",
-            {"content": reaction},
+            "/graphql",
+            data={
+                "query": dedent("""\
+                    mutation ($node_id: ID!) {
+                        addReaction(input: {
+                            subjectId: $node_id,
+                            content: ROCKET
+                        })
+                        {clientMutationId}
+                    }
+                """),
+                "variables": {"node_id": node_id},
+            },
         )
 
     def merge_pull_request(
