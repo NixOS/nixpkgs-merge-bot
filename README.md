@@ -28,7 +28,8 @@ through a comment detailing the discrepancies.
 
 ## Contact
 
-We have a [matrix channel](https://matrix.to/#/#nixpkgs-merge-bot:lassul.us).
+We can be found on the
+[nixpkgs-ci matrix channel](https://matrix.to/#/#nixpkgs-ci:nixos.org).
 
 ## Constraints
 
