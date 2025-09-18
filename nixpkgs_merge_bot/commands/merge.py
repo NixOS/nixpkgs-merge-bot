@@ -140,20 +140,19 @@ def merge_command(issue_comment: IssueComment, settings: Settings) -> HttpRespon
                 log.info(
                     f"{issue_comment.issue_number}: Trying to merge pull request, with head_sha: {pull_request.head_sha}"
                 )
-                client.merge_pull_request(
+                result = client.merge_pull_request(
                     issue_comment.issue_number,
                     pull_request.node_id,
                     pull_request.head_sha,
                 )
-                merge_tracker_link = (
-                    "Merge completed (#306934)"  # Link Issue to track merges
-                )
-                log.info(f"{issue_comment.issue_number}: {merge_tracker_link}")
+                summary = result.summary_md()
+                merge_tracker_link = "(#306934)"  # Link Issue to track merges
+                log.info(f"{issue_comment.issue_number}: merge successful ({result})")
                 client.create_issue_comment(
                     issue_comment.repo_owner,
                     issue_comment.repo_name,
                     issue_comment.issue_number,
-                    merge_tracker_link,
+                    f"{summary} {merge_tracker_link}",
                 )
                 return issue_response("merged")
             except GithubClientError as e:

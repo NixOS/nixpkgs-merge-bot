@@ -17,6 +17,12 @@ from typing import Any, Literal
 from nixpkgs_merge_bot.settings import Settings
 
 from .http_response import HttpResponse
+from .merge_result import (
+    AutoMergeResult,
+    DirectMergeResult,
+    MergeResult,
+    QueuedMergeResult,
+)
 
 log = logging.getLogger(__name__)
 STAGING = os.environ.get("STAGING", None)
@@ -217,7 +223,7 @@ class GithubClient:
 
     def merge_pull_request(
         self, pr_number: int, node_id: str, sha: str
-    ) -> HttpResponse | None:
+    ) -> MergeResult | None:
         if STAGING:
             log.debug(f"pull request {pr_number}: Staging, not merging")
             return None
@@ -227,6 +233,20 @@ class GithubClient:
                 "enablePullRequestAutoMerge", "enqueuePullRequest", "mergePullRequest"
             ],
         ) -> HttpResponse:
+            payload = (
+                dedent("""\
+                    {
+                        clientMutationId,
+                        mergeQueueEntry {
+                            mergeQueue {
+                                url
+                            }
+                        }
+                    }
+                """)
+                if mutation == "enqueuePullRequest"
+                else "{clientMutationId}"
+            )
             resp = self.post(
                 "/graphql",
                 data={
@@ -236,7 +256,7 @@ class GithubClient:
                                 pullRequestId: $node_id,
                                 expectedHeadOid: $sha
                             }})
-                            {{clientMutationId}}
+                            {payload}
                         }}
                     """),
                     "variables": {"node_id": node_id, "sha": sha},
@@ -261,20 +281,20 @@ class GithubClient:
         # It doesn't work when there are no required status checks for the target branch.
         # All development branches have these enabled, so this is a non-issue.
         try:
-            return graphql("enablePullRequestAutoMerge")
+            return AutoMergeResult(graphql("enablePullRequestAutoMerge"))
         except GithubClientError as e:
             log.info(f"pull request {pr_number} auto merge failed: {e}")
 
         # Auto-merge doesn't work if the target branch has already run all CI, in which
         # case the PR must either be enqueued or merged explicitly.
         try:
-            return graphql("enqueuePullRequest")
+            return QueuedMergeResult(graphql("enqueuePullRequest"))
         except GithubClientError as e:
             log.info(f"pull request {pr_number} enqueing failed: {e}")
 
         # Enqueing doesn't work if there is no merge queue for the target branch, in
         # which case we merge directly.
-        return graphql("mergePullRequest")
+        return DirectMergeResult(graphql("mergePullRequest"))
 
     def create_installation_access_token(self, installation_id: int) -> HttpResponse:
         return self.post(f"/app/installations/{installation_id}/access_tokens", data={})
