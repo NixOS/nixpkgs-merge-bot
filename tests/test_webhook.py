@@ -7,6 +7,12 @@ import pytest
 from pytest_mock import MockerFixture
 from test_server import WebhookTestServer
 
+from nixpkgs_merge_bot.github.github_client import MergeResult
+from nixpkgs_merge_bot.github.merge_result import (
+    AutoMergeResult,
+    DirectMergeResult,
+    QueuedMergeResult,
+)
 from nixpkgs_merge_bot.settings import Settings
 from nixpkgs_merge_bot.webhook.handler import GithubWebHook
 
@@ -81,8 +87,8 @@ def default_mocks() -> dict[str, Any]:
         "nixpkgs_merge_bot.github.github_client.GithubClient.pull_request": FakeHttpResponse(
             TEST_DATA / "pull_request.json"
         ),
-        "nixpkgs_merge_bot.github.github_client.GithubClient.merge_pull_request": FakeHttpResponse(
-            TEST_DATA / "merge_pull_request.json"
+        "nixpkgs_merge_bot.github.github_client.GithubClient.merge_pull_request": DirectMergeResult(
+            FakeHttpResponse(TEST_DATA / "merge_pull_request.json"),
         ),
         "nixpkgs_merge_bot.github.github_client.GithubClient.pull_request_files": FakeHttpResponse(
             TEST_DATA / "pull_request_files.json"
@@ -129,15 +135,46 @@ def default_mocks() -> dict[str, Any]:
         },
     ],
 )
+@pytest.mark.parametrize(
+    ("expected_comment", "merge_pull_request_mock"),
+    [
+        (
+            "Merge completed (#306934)",
+            DirectMergeResult(FakeHttpResponse(TEST_DATA / "merge_pull_request.json")),
+        ),
+        (
+            "Enabled Auto Merge (#306934)",
+            AutoMergeResult(FakeHttpResponse(TEST_DATA / "merge_pull_request.json")),
+        ),
+        (
+            "[Queued](https://github.com/nixpkgs-merge/nixpkgs/queue/master) for merge (#306934)",
+            QueuedMergeResult(
+                FakeHttpResponse(
+                    TEST_DATA / "merge_pull_request.enqueuePullRequest.json"
+                ),
+            ),
+        ),
+    ],
+)
 def test_post_merge(
     server: WebhookTestServer,
     mocker: MockerFixture,
     mock_overrides: dict[str, Any],
+    merge_pull_request_mock: MergeResult,
+    expected_comment: str,
 ) -> None:
     mocks = default_mocks()
     mocks.update(mock_overrides)
+    mocks["nixpkgs_merge_bot.github.github_client.GithubClient.merge_pull_request"] = (
+        merge_pull_request_mock
+    )
     for name, return_value in mocks.items():
         mocker.patch(name, return_value=return_value)
+
+    # Spy on create_issue_comment
+    mock_create_issue_comment = mocker.patch(
+        "nixpkgs_merge_bot.github.github_client.GithubClient.create_issue_comment"
+    )
 
     server.start_handler(GithubWebHook, SETTINGS)
 
@@ -157,6 +194,14 @@ def test_post_merge(
 
     assert response.status == 200, f"Response: {response.status}, {response_body}"
     assert response_body["action"] == "merged"
+
+    # Check the correct comment was created
+    mock_create_issue_comment.assert_called_once_with(
+        "nixpkgs-merge",
+        "nixpkgs",
+        1,
+        expected_comment,
+    )
 
 
 @pytest.mark.parametrize(

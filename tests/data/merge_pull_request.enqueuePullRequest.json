@@ -1,0 +1,10 @@
+{
+  "data": {
+    "clientMutationId": null,
+    "mergeQueueEntry": {
+      "mergeQueue": {
+        "url": "https://github.com/nixpkgs-merge/nixpkgs/queue/master"
+      }
+    }
+  }
+}
