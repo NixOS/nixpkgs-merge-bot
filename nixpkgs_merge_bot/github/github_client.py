@@ -3,11 +3,9 @@
 import argparse
 import base64
 import contextlib
-import http.client
 import json
 import logging
 import os
-import shutil
 import subprocess
 import time
 import urllib.parse
@@ -17,6 +15,8 @@ from textwrap import dedent
 from typing import Any, Literal
 
 from nixpkgs_merge_bot.settings import Settings
+
+from .http_response import HttpResponse
 
 log = logging.getLogger(__name__)
 STAGING = os.environ.get("STAGING", None)
@@ -44,21 +44,6 @@ def build_jwt_payload(app_id: int) -> dict[str, Any]:
     now = int(time.time())
     iat = now - jwt_iat_drift
     return {"iat": iat, "exp": iat + jwt_exp_delta, "iss": str(app_id)}
-
-
-class HttpResponse:
-    def __init__(self, raw: http.client.HTTPResponse) -> None:
-        self.raw = raw
-
-    def json(self) -> Any:
-        return json.load(self.raw)
-
-    def save(self, path: str) -> None:
-        with Path(path).open("wb") as f:
-            shutil.copyfileobj(self.raw, f)
-
-    def headers(self) -> http.client.HTTPMessage:
-        return self.raw.headers
 
 
 class GithubClientError(Exception):
