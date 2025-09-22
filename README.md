@@ -8,6 +8,9 @@ requests on nixpkgs, we're enhancing the merging process with this bot! 🎉
 
 [Mergebot RFC](https://github.com/NixOS/rfcs/pull/172)
 
+See also [approving changes](#approving-changes) below, for how the mergebot can
+evolve beyond the RFC.
+
 ## Features
 
 This bot empowers package maintainers by granting them the capability to merge
@@ -43,6 +46,24 @@ limitations:
 
 - Supports merging only into the `master`, `staging`, and `staging-next`
   branches.
+
+## Approving changes
+
+As with any project, fixes, improvements, and other changes are expected.
+
+Usually, such changes can be approved internally by the @NixOS/nixpkgs-ci team
+and other repository collaborators. However, changes that increase the scope of
+**what** the mergebot will merge or **who** can trigger merging will typically
+require additional acknowledgement from a "higher power".
+
+Such "higher powers" include anyone responsible for deciding who can merge
+things into nixpkgs, principally:
+
+- The @NixOS/commit-bit-delegation
+- The @NixOS/steering committee
+
+A ping for approval not responded to within a week will usually be interpreted
+as a silent acknowledgement.
 
 ---
 
