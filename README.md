@@ -63,7 +63,6 @@ things into nixpkgs, principally:
   [@NixOS/commit-bit-delegation](https://github.com/orgs/NixOS/teams/commit-bit-delegation)
 - The [@NixOS/nixpkgs-core](https://github.com/orgs/NixOS/teams/nixpkgs-core)
   team
-- The [@NixOS/steering](https://github.com/orgs/NixOS/teams/steering) committee
 
 A ping for approval not responded to within a week will usually be interpreted
 as a silent acknowledgement.
