@@ -59,8 +59,9 @@ require additional acknowledgement from a "higher power".
 Such "higher powers" include anyone responsible for deciding who can merge
 things into nixpkgs, principally:
 
-- The @NixOS/commit-bit-delegation
-- The @NixOS/steering committee
+- The
+  [@NixOS/commit-bit-delegation](https://github.com/orgs/NixOS/teams/commit-bit-delegation)
+- The [@NixOS/steering](https://github.com/orgs/NixOS/teams/steering) committee
 
 A ping for approval not responded to within a week will usually be interpreted
 as a silent acknowledgement.
