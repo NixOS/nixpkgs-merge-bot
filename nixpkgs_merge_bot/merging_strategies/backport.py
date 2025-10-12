@@ -9,14 +9,15 @@ from .merging_strategy import MergingStrategyTemplate
 log = logging.getLogger(__name__)
 
 
-class CommitterPR(MergingStrategyTemplate):
+class Backport(MergingStrategyTemplate):
     allowed_branches: Final[frozenset[str]] = frozenset(
         [
-            "master",
-            "staging",
-            "staging-next",
+            "release-25.05",
+            "staging-25.05",
+            "staging-next-25.05",
         ]
     )
+    allowed_user: Final[str] = "nixpkgs-ci[bot]"
 
     def run(
         self, pull_request: PullRequest, issue_comment: IssueComment
@@ -25,22 +26,15 @@ class CommitterPR(MergingStrategyTemplate):
         if not result:
             return result, decline_reasons
 
-        committer_list = self.github_client.get_team_members(
-            pull_request.repo_owner, self.settings.committer_team_slug
-        )
-
-        allowed_users = [committer["login"] for committer in committer_list]
-
-        if pull_request.user_login not in allowed_users:
+        if pull_request.user_login != self.allowed_user:
             result = False
-            message = "CommitterPR: PR author is not a committer"
+            message = f"Backport: PR author is not {self.allowed_user}"
             decline_reasons.append(message)
             log.info(f"{pull_request.number}: {message}")
-            return result, decline_reasons
 
         result, decline_reasons = self.run_maintainer_check(pull_request, issue_comment)
 
         if result:
-            log.info(f"{pull_request.number}: CommitterPR accepted the merge")
+            log.info(f"{pull_request.number}: Backport accepted the merge")
 
         return result, decline_reasons
