@@ -19,7 +19,7 @@
           sops.secrets."staging/webhook_secret" = { };
           sops.secrets."staging/github_app_key" = { };
           services.nixpkgs-merge-bot = {
-            enable = true;
+            enable = false;
             hostname = "nixpkgs-merge-bot-staging.nixos.org";
             github-app-login = "nixpkgs-merge";
             github-app-id = 410668;
